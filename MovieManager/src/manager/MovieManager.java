@@ -13,7 +13,7 @@ public class MovieManager {
 	public static void main(String[] args) {
 		try {
 			AllocineManager api = new AllocineManager() ;
-			model.Movie movie = api.searchMovies("star wars I");
+			model.Movie movie = api.searchMovies("retour vers le futur ii");
 			
 			System.out.println("*************************");
 			System.out.println(movie);

@@ -1,72 +1,68 @@
 package allocine;
 
-import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import allocine.model.Movie;
+
 
 public class MovieMatcher implements Matcher {
 	
 	@Override
-	public Map<List<String>, Integer> match(String query, List<String> entry) {
-		List<List<String>> entries = new ArrayList<List<String>>() ;
-		for (String e : entry) {
-			entries.add(Arrays.asList(e.split("[\\s\\p{Punct}]+")));
-		}
-		return this.match(Arrays.asList(query.split("[\\s\\p{Punct}]+")), entries);
+	public Map<List<String>, Integer> match(String query, Collection<List<String>> entry) {
+		return this.match(Arrays.asList(query.toLowerCase().split("[\\s\\p{Punct}]+")), entry);
 	}
 
 
-	public Map<List<String>, Integer> match(List<String> terms, List<List<String>> entry) {
+	public Map<List<String>, Integer> match(List<String> terms, Collection<List<String>> entry) {
 		Map<List<String>, Integer> scores = new HashMap<List<String>, Integer>();
-		
+		int index = entry.size() ;
 		for (List<String> e : entry) {
-			Integer score = 0 ;
+			Integer score = index ;
 			for (String term : terms) {
 				if (e.contains(term)) {
 					score += 1 ;
 					scores.put(e, score);				
 				}
+				
 			}
+			if (e.equals(terms)) {
+				score += 10 ;
+				scores.put(e, score);
+			}
+			index-- ;
 		}
 		
 		return scores;
 	}
 	
-	public List<String> getBestEntry(String query, List<String> entry) {
-		List<String> list = new ArrayList<String>() ;
+	public int getBestEntry(String query, List<Movie> entry) {
+		int code = -1 ;
 		int max = 0 ;
 		
-		Map<List<String>, Integer> map = this.match(query, entry);
+		Map<List<String>, Integer> entries = new HashMap<List<String>, Integer>() ;
+		for (Movie m : entry) {
+			entries.put(Arrays.asList(m.getOriginalTitle().toLowerCase().split("[\\s\\p{Punct}]+")), m.getCode());
+			entries.put(Arrays.asList(m.getTitle().toLowerCase().split("[\\s\\p{Punct}]+")), m.getCode());
+		}
+		
+		// Match
+		Map<List<String>, Integer> map = this.match(query, entries.keySet());
+		
+		// Get Movie with the best score
 		Set<Entry<List<String>, Integer>> e = map.entrySet();
 		for (Entry<List<String>, Integer> l : e) {
 			if (l.getValue() > max) {
 				max = l.getValue() ;
-				list = l.getKey() ;
+				code = entries.get(l.getKey()) ;
 			}
 		}
-		return list ;
-	}
-
-	
-	public static void main(String[] args) {
-		MovieMatcher mm = new MovieMatcher() ;
-		
-		String query = "Star Wars I" ;
-		List<String> entries = new ArrayList<String>() ;
-		entries.add("Star Wars: Episode III - Revenge of the Sith");
-		entries.add("Star Wars: Episode I - The Phantom Menace");
-		entries.add("Star Wars: Episode II - Attack of the Clones");
-		entries.add("Dünyayi Kurtaran Adam - Turkish Star Wars");
-		entries.add("Robot Chicken: Star Wars Episode III");
-		
-		List<String> l = mm.getBestEntry(query, entries) ;
-		System.out.println("best:" + l);
-	}
-	
+		return code ;
+	}	
 
 }
