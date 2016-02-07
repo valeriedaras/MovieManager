@@ -1,11 +1,14 @@
 package allocine;
 
 import java.util.List;
+
 import model.Movie;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
+
 import utils.Log;
+import allocine.model.CastMember;
 import allocine.model.CodeName;
 import allocine.model.MovieInfos;
 import allocine.model.Search;
@@ -67,17 +70,20 @@ public class AllocineManager {
 				}
 			}
 			code = matcher.getBestEntry(query, movies) ;
-						
-			// Call Allocine API to get all information of selected movie
-			MovieInfos nsearch = api.getMovieInfos(Integer.toString(code));
-			
-			// Create a movie and update its fields
-			Movie m = new Movie();
-			m.setTitle(nsearch.getMovie().getOriginalTitle());
-			m.setYear(Integer.toString(nsearch.getMovie().getProductionYear()));
-			m.setSynopsis(nsearch.getMovie().getSynopsis());
-			setGenres(m,nsearch.getMovie());
-			return m;
+			if (code > 0) {
+				// Call Allocine API to get all information of selected movie
+				MovieInfos nsearch = api.getMovieInfos(Integer.toString(code));
+				
+				// Create a movie and update its fields
+				Movie m = new Movie();
+				m.setTitle(nsearch.getMovie().getTitle());
+				m.setOriginalTitle(nsearch.getMovie().getOriginalTitle());
+				m.setYear(Integer.toString(nsearch.getMovie().getProductionYear()));
+				m.setSynopsis(nsearch.getMovie().getSynopsis());
+				setCastingMember(m,nsearch.getMovie());
+				setGenres(m,nsearch.getMovie());
+				return m;
+			}
 		}
 		throw new NoMovieFoundException() ;
 	}
@@ -94,6 +100,17 @@ public class AllocineManager {
 		}
 	}
 	
-	
+	private void setCastingMember(Movie nmovie, allocine.model.Movie movie) {
+		List<CastMember> members = movie.getCastMember() ;
+		System.out.println(members);
+		for (CastMember member : members) {
+			if (member.isActor()) {
+				nmovie.addActor(member.getShortPerson().getName(),member.getShortPerson().getGender());
+			}
+			else if (member.isDirector()) {
+				nmovie.addDirector(member.getShortPerson().getName(),member.getShortPerson().getGender());
+			}
+		}
+	}
 	
 }
