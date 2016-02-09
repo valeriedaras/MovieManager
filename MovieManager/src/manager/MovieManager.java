@@ -1,5 +1,6 @@
 package manager;
 
+import model.Movie;
 import utils.Log;
 import allocine.AllocineException;
 import allocine.AllocineManager;
@@ -15,7 +16,7 @@ public class MovieManager {
 	public static void main(String[] args) {
 		try {
 			AllocineManager api = new AllocineManager() ;
-			model.Movie movie = api.searchMovies("harry potter");
+			Movie movie = api.searchMovies("harry potter");
 			
 			System.out.println("*************************");
 			System.out.println(movie);
