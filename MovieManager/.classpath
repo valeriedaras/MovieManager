@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.launching.macosx.MacOSXType/Java SE 8 [1.8.0_40]"/>
-	<classpathentry kind="lib" path="/Users/valeriedaras/Documents/Documents/Personnel/Project_Rasp_Search_Engine/MovieManager/lib/allocine.jar"/>
-	<classpathentry kind="lib" path="/Users/valeriedaras/Documents/Documents/Personnel/Project_Rasp_Search_Engine/MovieManager/lib/httpclient-osgi-4.3.jar"/>
-	<classpathentry kind="lib" path="/Users/valeriedaras/Documents/Documents/Personnel/Project_Rasp_Search_Engine/MovieManager/lib/org-apache-commons-logging.jar"/>
-	<classpathentry kind="lib" path="/Users/valeriedaras/Documents/Documents/Personnel/Project_Rasp_Search_Engine/MovieManager/lib/apache-httpcomponents-httpcore.jar"/>
-	<classpathentry kind="lib" path="/Users/valeriedaras/Documents/Documents/Personnel/Project_Rasp_Search_Engine/MovieManager/lib/com.fasterxml.jackson.databind.jar"/>
-	<classpathentry kind="lib" path="/Users/valeriedaras/Documents/Documents/Personnel/Project_Rasp_Search_Engine/MovieManager/lib/common-lang3.jar"/>
+	<classpathentry kind="lib" path="lib/allocine.jar"/>
+	<classpathentry kind="lib" path="lib/apache-httpcomponents-httpcore.jar"/>
+	<classpathentry kind="lib" path="lib/com.fasterxml.jackson.databind.jar"/>
+	<classpathentry kind="lib" path="lib/common-lang3.jar"/>
+	<classpathentry kind="lib" path="lib/httpclient-osgi-4.3.jar"/>
+	<classpathentry kind="lib" path="lib/json-simple-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/org-apache-commons-logging.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
