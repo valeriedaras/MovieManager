@@ -47,7 +47,9 @@ public class MovieMatcher implements Matcher {
 		
 		Map<List<String>, Integer> entries = new HashMap<List<String>, Integer>() ;
 		for (Movie m : entry) {
-			entries.put(Arrays.asList(m.getOriginalTitle().toLowerCase().split("[\\s\\p{Punct}]+")), m.getCode());
+			if (m.getOriginalTitle() != null) {
+				entries.put(Arrays.asList(m.getOriginalTitle().toLowerCase().split("[\\s\\p{Punct}]+")), m.getCode());
+			}
 			if(m.getTitle() != null) {
 				entries.put(Arrays.asList(m.getTitle().toLowerCase().split("[\\s\\p{Punct}]+")), m.getCode());
 			}
@@ -65,6 +67,6 @@ public class MovieMatcher implements Matcher {
 			}
 		}
 		return code ;
-	}	
+	}
 
 }

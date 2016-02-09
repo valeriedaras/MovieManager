@@ -1,8 +1,13 @@
 package model;
 
+import java.io.IOException;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 public class Movie {
 
@@ -124,6 +129,31 @@ public class Movie {
 		this.synopsis = synopsis;
 	}
 	
+	@SuppressWarnings("unchecked")
+	public String toJSON() throws IOException {
+		JSONObject obj = new JSONObject();
+		obj.put("originalTitle", this.originalTitle);
+		obj.put("title", this.title);
+		obj.put("year", this.year);
+		JSONArray dirs = new JSONArray();
+		dirs.addAll(this.directors);
+		obj.put("directors", dirs);
+		JSONArray actors = new JSONArray();
+		dirs.addAll(this.actors);
+		obj.put("actors", actors);
+		JSONArray genres = new JSONArray();
+		dirs.addAll(this.genres);
+		obj.put("genres", genres);
+		/*for(Director dir : this.directors) {
+			dirs.add(e)
+		}*/
+		
+		StringWriter out = new StringWriter();
+	    obj.writeJSONString(out);
+	      
+		return out.toString();
+	}
+	
 	public String toString() {
 		String genres = new String() ;
 		for (Genre g : this.genres) {
@@ -135,5 +165,22 @@ public class Movie {
 				+"\nGenre: " + genres
 				+"\nActors: " + actors
 				+"\nDirectors: " + directors;
+	}
+	
+	public static void main(String[] args) {
+		Movie m = new Movie() ;
+		m.setOriginalTitle("Coucou");
+		m.setTitle("coucou2");
+		m.setYear("2016");
+		ArrayList<Genre> l = new ArrayList<Genre>() ;
+		l.add(new Genre("SF"));
+		m.setGenres(l);
+		
+		try {
+			System.out.println(m.toJSON());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 }

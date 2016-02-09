@@ -34,21 +34,15 @@ public class Log {
 	}
 	
 	public void logSevere(String msg) {
-		if (verbose) {
-			log.log(Level.SEVERE, msg);
-		}
+		log.log(Level.SEVERE, msg);
 	}
 	
 	public void logSevere(String msg, Object arg) {
-		if (verbose) {
-			log.log(Level.SEVERE, msg, arg);
-		}
+		log.log(Level.SEVERE, msg, arg);
 	}
 	
 	public void logSevere(String msg, Object[] args) {
-		if (verbose) {
-			log.log(Level.SEVERE, msg, args);
-		}
+		log.log(Level.SEVERE, msg, args);
 	}
 	
 }

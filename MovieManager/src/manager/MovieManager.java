@@ -1,14 +1,16 @@
 package manager;
 
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import utils.Log;
 import allocine.AllocineException;
 import allocine.AllocineManager;
 import allocine.NoMovieFoundException;
 
 public class MovieManager {
 	
-	private static final Logger logger = Logger.getLogger("MovieManager");
+	/**
+	 * Logger
+	 */
+	private static final Log logger = new Log("MovieManager", false);
 	
 	public static void main(String[] args) {
 		try {
@@ -17,11 +19,12 @@ public class MovieManager {
 			
 			System.out.println("*************************");
 			System.out.println(movie);
-			
+			movie = api.searchMovies("harry potter 5");
+			System.out.println(movie);
 		} catch (AllocineException e) {
-			logger.log(Level.SEVERE, "Allocine Exception:", e);
+			logger.logSevere("Allocine Exception:", e);
 		} catch (NoMovieFoundException e) {
-			logger.log(Level.INFO, "No movie found.");
+			logger.logSevere("No movie found.");
 		}
 	}
 
