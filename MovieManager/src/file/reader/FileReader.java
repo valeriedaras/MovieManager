@@ -1,6 +1,6 @@
 package file.reader;
 
-import model.File;
+import model.MovieFile;
 
 public class FileReader {
 
@@ -10,9 +10,9 @@ public class FileReader {
 		this.filePath = file;
 	}
 	
-	public File retrieveInfosFile() {
+	public MovieFile retrieveInfosFile() {
 		if (filePath != null) {
-			File file = new File() ;
+			MovieFile file = new MovieFile() ;
 			
 			// Get path
 			String[] path = filePath.split("/") ;

@@ -1,6 +1,6 @@
 package file.writer;
 
-import model.File;
+import model.MovieFile;
 import model.Movie;
 
 public class FileWriter {
@@ -14,8 +14,8 @@ public class FileWriter {
 		
 	}
 	
-	private File movieToFile(Movie movie) {
-		File f = new File() ;
+	private MovieFile movieToFile(Movie movie) {
+		MovieFile f = new MovieFile() ;
 		f.setName(movie.getTitle()+"."+movie.getYear());
 		f.setExtension(movie.getFormat().getName());
 		return f;

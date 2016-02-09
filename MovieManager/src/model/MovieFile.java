@@ -1,6 +1,6 @@
 package model;
 
-public class File {
+public class MovieFile {
 	
 	private String path ;
 	
@@ -8,11 +8,11 @@ public class File {
 	
 	private String extension ;
 	
-	public File() {
+	public MovieFile() {
 		
 	}
 	
-	public File(String path, String name, String extension) {
+	public MovieFile(String path, String name, String extension) {
 		this.path = path ;
 		this.name = name ;
 		this.extension = extension ;
