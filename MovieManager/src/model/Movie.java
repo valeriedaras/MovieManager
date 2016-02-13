@@ -132,25 +132,16 @@ public class Movie {
 	@SuppressWarnings("unchecked")
 	public String toJSON() throws IOException {
 		JSONObject obj = new JSONObject();
-		obj.put("originalTitle", this.originalTitle);
+		obj.put("original title", this.originalTitle);
 		obj.put("title", this.title);
 		obj.put("year", this.year);
-		JSONArray dirs = new JSONArray();
-		dirs.addAll(this.directors);
-		obj.put("directors", dirs);
-		JSONArray actors = new JSONArray();
-		dirs.addAll(this.actors);
-		obj.put("actors", actors);
-		JSONArray genres = new JSONArray();
-		dirs.addAll(this.genres);
-		obj.put("genres", genres);
-		/*for(Director dir : this.directors) {
-			dirs.add(e)
-		}*/
+		obj.put("directors", buildArray(this.directors));
+		obj.put("actors", buildArray(this.actors));
+		obj.put("genres", buildArray(this.genres));	
+		obj.put("synopsis", this.synopsis);
 		
 		StringWriter out = new StringWriter();
 	    obj.writeJSONString(out);
-	      
 		return out.toString();
 	}
 	
@@ -167,6 +158,16 @@ public class Movie {
 				+"\nDirectors: " + directors;
 	}
 	
+	
+	@SuppressWarnings("unchecked")
+	private JSONArray buildArray(List<?> l) {
+		JSONArray array = new JSONArray();
+		for (Object o : l) {
+			array.add(o.toString());
+		}
+		return array ;
+	}
+	
 	public static void main(String[] args) {
 		Movie m = new Movie() ;
 		m.setOriginalTitle("Coucou");
@@ -174,13 +175,13 @@ public class Movie {
 		m.setYear("2016");
 		ArrayList<Genre> l = new ArrayList<Genre>() ;
 		l.add(new Genre("SF"));
+		l.add(new Genre("Aventure"));
 		m.setGenres(l);
 		
 		try {
 			System.out.println(m.toJSON());
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			
 		}
 	}
 }

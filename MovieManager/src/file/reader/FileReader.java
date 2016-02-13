@@ -1,52 +1,90 @@
 package file.reader;
 
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+
 import model.MovieFile;
 
 public class FileReader {
 
-	private String filePath ;
+	private List<String> blacklist ;
 	
-	public FileReader(String file) {
-		this.filePath = file;
+	private static final String SEPARATOR = " " ;
+	
+	private static final String BLACKLIST_FILE = "src/blacklist.txt" ;
+	
+	public FileReader() {
+		this.blacklist = new ArrayList<String>() ;
+		FileInputStream fstream;
+		try {
+			fstream = new FileInputStream(BLACKLIST_FILE);
+			try(BufferedReader br = new BufferedReader(new InputStreamReader(fstream))) {
+			    for(String line; (line = br.readLine()) != null; ) {
+			        this.blacklist.add(line);
+			    }
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
 	}
 	
-	public MovieFile retrieveInfosFile() {
-		if (filePath != null) {
-			MovieFile file = new MovieFile() ;
+	public MovieFile retrieveInfosFile(String file) {
+
+		if (file != null) {
+			MovieFile mFile = new MovieFile() ;
 			
 			// Get path
-			String[] path = filePath.split("/") ;
-			String pathStr = new String() ;
-			for (int i=0; i<path.length-1; i++) {
-				pathStr += path[i]+"/" ;
-			}
-			file.setPath(pathStr);
+			String[] path = file.split("/") ;
 			
 			// Get potential title
 			String [] name = path[path.length-1].split("[\\s\\p{Punct}]+") ;
 			String nameStr = new String() ;
 			for (int i=0; i<name.length-1; i++) {
-				if (!isInteger(name[i])) {
-					nameStr += name[i]+" " ;
+				if (blacklist.contains(name[i])) {
+					if (nameStr.endsWith(" ") || nameStr.endsWith(SEPARATOR)) {
+						nameStr=nameStr.substring(0, nameStr.length()-1);
+					}
+					break;
+				}
+				else if (!isYear(name[i])) {
+					nameStr += name[i]+SEPARATOR ;
 				}
 				else {
-					break ;
+					if (nameStr.isEmpty()) {
+						nameStr += name[i]+SEPARATOR ;
+					}
+					else {
+						mFile.setYear(name[i]) ;
+					}				
 				}
-				
 			}
-			file.setName(nameStr);
+			nameStr=nameStr.trim();
+			mFile.setTitle(nameStr);
 			
 			// Set Extension
-			file.setExtension("."+name[name.length-1]);
+			mFile.setExtension("."+name[name.length-1]);
 			
-			System.out.println("File:" + file);
-			return file ;
+			return mFile ;
 		}
 		return null ;
 	}
 	
+	private static boolean isYear(String s) {
+	    if (isInteger(s)) {
+	    	return s.length() == 4;
+	    }
+	    return false ;
+	}
+	
 	private static boolean isInteger(String s) {
-	    try { 
+	    try {
 	        Integer.parseInt(s); 
 	    } catch(NumberFormatException e) { 
 	        return false; 
@@ -57,7 +95,22 @@ public class FileReader {
 	}
 	
 	public static void main(String[] args) {
-		FileReader f = new FileReader("Cinquante.Nuances.de.Grey.2015.FRENCH.BRRip.XviD-QCP.avi") ;
-		f.retrieveInfosFile() ;
+		FileReader f = new FileReader() ;
+		FileInputStream fstream;
+		try {
+			fstream = new FileInputStream("src/corpus.txt");
+			try(BufferedReader br = new BufferedReader(new InputStreamReader(fstream))) {
+			    for(String line; (line = br.readLine()) != null; ) {
+			        System.out.println(line) ;
+					f.retrieveInfosFile(line) ;
+			    }
+			    // line is not visible here.
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
 	}
 }

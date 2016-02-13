@@ -1,9 +1,7 @@
 package fileController;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 
 import model.JSONFile;
 import model.MovieFile;
@@ -27,16 +25,13 @@ public class FileController {
 		file.delete();		
 	}
 	
-	public void createFile(MovieFile j) throws IOException{
-		
-		File f = new File(j.toString());
+	
+	public void createFile(JSONFile j){
+		File f = new File (j.toString());
 		f.mkdirs();
-		
-		FileOutputStream ostream = new FileOutputStream(f);
-		ObjectOutputStream o = new ObjectOutputStream(ostream);
-		o.writeObject(j);
-		
-	}	
+	
+	}
+	
 	
 	public void renameFile (String newUrl, String oldUrl)throws FileNotFoundException{
 		
