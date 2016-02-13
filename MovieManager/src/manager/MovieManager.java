@@ -6,8 +6,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
-import file.reader.FileReader;
 import fileController.FileController;
+import model.InvalidMovieFileException;
 import model.Movie;
 import model.MovieFile;
 import utils.Log;
@@ -17,7 +17,7 @@ import allocine.NoMovieFoundException;
 
 public class MovieManager {
 	
-	private AllocineManager api ;
+	private AllocineManager allocineManager ;
 	
 	private FileController fileController ;
 	
@@ -27,29 +27,53 @@ public class MovieManager {
 	private static final Log logger = new Log("MovieManager", true);
 	
 	public MovieManager() {
-		this.api = new AllocineManager() ;
+		this.allocineManager = new AllocineManager() ;
 		this.fileController = new FileController() ;
 	}
 	
 	public Movie searchMovie(MovieFile file) {
 		try {
-			return api.searchMovies(file);
+			return allocineManager.searchMovies(file);
 		} catch (AllocineException | NoMovieFoundException e) {
-			logger.logInfo("Movie {0} not found. Has to be moved into another folder.", file);
+			logger.logInfo("Movie \"{0}\" not found. Has to be moved into another folder.", file);
 		}
 		return null;
 	}
 	
+	public void performFileCreated(String path) {
+		logger.logInfo("Perform File Created: {0}",path);
+		MovieFile mFile = this.fileController.performRetrieveInfoFile(path);
+		Movie movie = searchMovie(mFile);
+		if(movie != null) {
+			System.out.println("*************************");
+			System.out.println(movie);
+		}
+		try {
+			mFile.update(movie);
+		} catch (InvalidMovieFileException e) {
+			logger.logSevere("Invalid Movie File Exception: the movie has to been moved into another folder.");
+		}
+		fileController.createFile(mFile);
+		// + fileController.updateSymbolicLinks(mFile);
+	}
+	
+	public void performFileDeleted(String path) {
+		logger.logInfo("Perform File Deleted: {0}",path);
+	}
+	
+	public FileController getFileController() {
+		return fileController;
+	}
+	
 	public static void main(String[] args) {
 		MovieManager movieManager = new MovieManager() ;
-		FileReader f = new FileReader() ;
 		FileInputStream fstream;
 		MovieFile file = null;
 		try {
 			fstream = new FileInputStream("src/corpus.txt");
 			try(BufferedReader br = new BufferedReader(new InputStreamReader(fstream))) {
 			    for(String line; (line = br.readLine()) != null; ) {
-					file = f.retrieveInfosFile(line) ;
+					file = movieManager.getFileController().performRetrieveInfoFile(line) ;
 					Movie movie = movieManager.searchMovie(file);
 					if(movie != null) {
 						System.out.println("*************************");

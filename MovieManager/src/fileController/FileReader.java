@@ -1,4 +1,4 @@
-package file.reader;
+package fileController;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
@@ -18,7 +18,7 @@ public class FileReader {
 	
 	private static final String BLACKLIST_FILE = "src/blacklist.txt" ;
 	
-	public FileReader() {
+	protected FileReader() {
 		this.blacklist = new ArrayList<String>() ;
 		FileInputStream fstream;
 		try {
@@ -35,7 +35,7 @@ public class FileReader {
 		}
 	}
 	
-	public MovieFile retrieveInfosFile(String file) {
+	protected MovieFile retrieveInfosFile(String file) {
 
 		if (file != null) {
 			MovieFile mFile = new MovieFile() ;
