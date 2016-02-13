@@ -3,6 +3,7 @@ package allocine;
 import java.util.List;
 
 import model.Movie;
+import model.MovieFile;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -41,9 +42,10 @@ public class AllocineManager {
 		}
 	}
 	
-	public Movie searchMovies(String query) throws AllocineException, NoMovieFoundException {
+	
+	public Movie searchMovies(MovieFile query) throws AllocineException, NoMovieFoundException {
 		// Call Allocine API to search movies
-		Search search = api.searchMovies(query);
+		Search search = api.searchMovies(query.getTitle());
 		
 		// Get found movies
 		List<allocine.model.Movie> movies = search.getMovies();
@@ -55,21 +57,8 @@ public class AllocineManager {
 				logger.logInfo(movie.getTitle());
 			}
 			
-			// Get first movie code 
-			int code = movies.get(0).getCode() ;
-			
 			// Search for the best occurrence
-			for(allocine.model.Movie movie : movies) {
-				if(query.equals(movie.getTitle())) {
-					code = movie.getCode() ;
-					break;
-				}
-				if (movie.getOriginalTitle().contains(query)) {
-					code = movie.getCode() ;
-					break;
-				}
-			}
-			code = matcher.getBestEntry(query, movies) ;
+			int code = matcher.getBestEntry(query, movies) ;
 			if (code > 0) {
 				// Call Allocine API to get all information of selected movie
 				MovieInfos nsearch = api.getMovieInfos(Integer.toString(code));
@@ -102,7 +91,6 @@ public class AllocineManager {
 	
 	private void setCastingMember(Movie nmovie, allocine.model.Movie movie) {
 		List<CastMember> members = movie.getCastMember() ;
-		System.out.println(members);
 		for (CastMember member : members) {
 			if (member.isActor()) {
 				nmovie.addActor(member.getShortPerson().getName(),member.getShortPerson().getGender());

@@ -1,37 +1,79 @@
 package model;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 public class MovieFile {
 	
-	private String path ;
+	private Movie movie ;
 	
-	private String name ;
+	private String title ;
+	
+	private String year ;
 	
 	private String extension ;
+	
+	private List<String> symbolicLinks ;
+	
+	private static final String PATH = ".all" ;
+	
+	private static final String SEPARATOR = "_" ;
 	
 	public MovieFile() {
 		
 	}
 	
-	public MovieFile(String path, String name, String extension) {
-		this.path = path ;
-		this.name = name ;
+	
+	public MovieFile(String title, String year, String extension) throws InvalidMovieFileException {
+		this.symbolicLinks = new ArrayList<String>() ;
+		this.setTitle(title);
+		this.setYear(year);
+		this.extension = extension ;
+	}
+	
+	public MovieFile(Movie movie, String extension) throws InvalidMovieFileException {
+		this.symbolicLinks = new ArrayList<String>() ;
+		this.movie = movie ; 
+		setTitle(movie);
+		setYear(movie.getYear());
 		this.extension = extension ;
 	}
 
-	public String getPath() {
-		return path;
+	public String getYear() {
+		return year;
+	}
+	
+	public void setYear(String year) {
+		if (year != null) {
+			if (year.length() == 4) {
+				this.year = year ;
+			}
+		}
+	}
+	
+	public String getTitle() {
+		return title;
 	}
 
-	public void setPath(String path) {
-		this.path = path;
+	public void setTitle(Movie m) throws InvalidMovieFileException{
+		if (m != null) {
+			if (m.getOriginalTitle() != null) {
+				if(m.getYear() != null) {
+					this.title = setSeparator(m.getOriginalTitle())+SEPARATOR+m.getYear();
+				}
+				else {
+					this.title = setSeparator(m.getOriginalTitle());
+				}
+			}
+			else {
+				throw new InvalidMovieFileException();
+			}
+		}
 	}
-
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
+	
+	public void setTitle(String m) {
+		this.title = m ;
 	}
 
 	public String getExtension() {
@@ -42,8 +84,35 @@ public class MovieFile {
 		this.extension = extension;
 	}
 	
+	public void addSymbolicLink(Genre g) {
+		if (!this.symbolicLinks.contains(g.getName())) {
+			this.symbolicLinks.add(g.getName());
+		}
+	}
+	
 	public String toString() {
-		return path+name+extension;
+		if (this.year != null) {
+			return title+SEPARATOR+year+extension;
+		}
+		else {
+			return title+extension;
+		}
+	}
+	
+	public String toJSON() throws IOException {
+		if (movie == null) {
+			return null;
+		}
+		return movie.toJSON();
+	}
+	
+	private String setSeparator(String s) {
+		String[] strTab = s.split(" ") ;
+		String str = new String() ;
+		for (int i=0; i<strTab.length-1; i++) {
+			str+= strTab[i] + SEPARATOR ;
+		}
+		return str+strTab[strTab.length-1];
 	}
 }
 

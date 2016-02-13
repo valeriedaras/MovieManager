@@ -26,18 +26,12 @@ public class FileController {
 	}
 	
 	
-	public void createFile(MovieFile m){
-		
-		File f = new File (m.toString());
-		f.mkdirs();
-		
-	}
-	
 	public void createFile(JSONFile j){
 		File f = new File (j.toString());
 		f.mkdirs();
-		
+	
 	}
+	
 	
 	public void renameFile (String newUrl, String oldUrl)throws FileNotFoundException{
 		

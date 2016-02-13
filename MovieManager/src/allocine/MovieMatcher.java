@@ -1,72 +1,86 @@
 package allocine;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
 
+import model.MovieFile;
 import allocine.model.Movie;
 
 
 public class MovieMatcher implements Matcher {
-	
-	@Override
-	public Map<List<String>, Integer> match(String query, Collection<List<String>> entry) {
-		return this.match(Arrays.asList(query.toLowerCase().split("[\\s\\p{Punct}]+")), entry);
+
+	public void match(String query, String opQuery, List<Result> res) {
+		this.match(Arrays.asList(query.toLowerCase().split("[\\s\\p{Punct}]+")), opQuery, res);
 	}
-
-
-	public Map<List<String>, Integer> match(List<String> terms, Collection<List<String>> entry) {
-		Map<List<String>, Integer> scores = new HashMap<List<String>, Integer>();
-		int index = entry.size() ;
-		for (List<String> e : entry) {
+	
+	public void match(List<String> query, String opQuery, List<Result> results) {
+		int index = results.size() ;
+		for(Result res : results) {
 			Integer score = index ;
-			for (String term : terms) {
-				if (e.contains(term)) {
-					score += 1 ;
-					scores.put(e, score);				
+			for (String term : query) {
+				if (res.getOriginalTitle().contains(term)) {
+					res.setScore(score += 1) ;
 				}
-				
+				if (res.getTitle()!=null) {
+					if(res.getTitle().contains(term)) {
+						res.setScore(score += 1) ;
+					}
+				}
 			}
-			if (e.equals(terms)) {
-				score += 10 ;
-				scores.put(e, score);
+			if (res.getYear().equals(opQuery)) {
+				res.setScore(score += 10) ;
 			}
-			index-- ;
+			if (res.getOriginalTitle().equals(query)) {
+				res.setScore(score += 10) ;
+			}
+			if (res.getTitle()!=null) {
+				if (res.getTitle().equals(query)) {
+					res.setScore(score += 10) ;
+				}
+			}
 		}
-		
-		return scores;
+		index-- ;
 	}
 	
-	public int getBestEntry(String query, List<Movie> entry) {
-		int code = -1 ;
-		int max = 0 ;
+	
+	public int getBestEntry(MovieFile query, List<Movie> entry) {
 		
-		Map<List<String>, Integer> entries = new HashMap<List<String>, Integer>() ;
+		// Retrieving all titles, production years and movie codes
+		List<Result> results = new ArrayList<Result>() ;
 		for (Movie m : entry) {
+			Result result = new Result() ;
+			result.setCode(m.getCode());
 			if (m.getOriginalTitle() != null) {
-				entries.put(Arrays.asList(m.getOriginalTitle().toLowerCase().split("[\\s\\p{Punct}]+")), m.getCode());
+				result.setOriginalTitle(Arrays.asList(m.getOriginalTitle().toLowerCase().split("[\\s\\p{Punct}]+")));
 			}
 			if(m.getTitle() != null) {
-				entries.put(Arrays.asList(m.getTitle().toLowerCase().split("[\\s\\p{Punct}]+")), m.getCode());
+				result.setTitle(Arrays.asList(m.getTitle().toLowerCase().split("[\\s\\p{Punct}]+")));
 			}
+			if (m.getProductionYear() > 1920) {
+				result.setYear(Integer.toString(m.getProductionYear()));
+			}
+			results.add(result);
 		}
+		
 		
 		// Match
-		Map<List<String>, Integer> map = this.match(query, entries.keySet());
+		this.match(query.getTitle(), query.getYear(), results) ;
 		
-		// Get Movie with the best score
-		Set<Entry<List<String>, Integer>> e = map.entrySet();
-		for (Entry<List<String>, Integer> l : e) {
-			if (l.getValue() > max) {
-				max = l.getValue() ;
-				code = entries.get(l.getKey()) ;
+		// Init movie code of best entry
+		int code = -1 ;
+				
+		// Init maximum score
+		int max = 0 ;
+		
+		// Get best score
+		for(Result res : results) {
+			if(res.getScore() > max) {
+				max = res.getScore();
+				code = res.getCode();
 			}
 		}
-		return code ;
+		return code;
 	}
 
 }
