@@ -68,7 +68,6 @@ public class MovieManager {
 	public static void main(String[] args) {
 		MovieManager movieManager = new MovieManager() ;
 		FileInputStream fstream;
-		MovieFile file = null;
 		try {
 			fstream = new FileInputStream("src/corpus.txt");
 			try(BufferedReader br = new BufferedReader(new InputStreamReader(fstream))) {
