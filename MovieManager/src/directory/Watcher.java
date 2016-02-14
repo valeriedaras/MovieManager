@@ -13,12 +13,14 @@ import utils.Log;
 import static java.nio.file.StandardWatchEventKinds.*;
 
 public class Watcher {
-
-	private final MovieManager manager ;
 	
 	private WatchService watcher ;
     
     private Path dir ;
+    
+    private final MovieManager manager ;
+    
+    private final String path ;
     
 	private static final boolean verbose = true;
 	
@@ -26,12 +28,13 @@ public class Watcher {
 	
 	public Watcher(MovieManager manager, String path) {
 		this.manager = manager;
+		this.path = path;
 		try {
 			this.watcher = FileSystems.getDefault().newWatchService();
 			this.dir = Paths.get(path);
 			this.dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
 			
-			logger.logInfo("Watch Service registered for dir: {0}" + dir.getFileName());
+			logger.logInfo("Watch Service registered for dir: {0}", dir.getFileName());
 		} catch (IOException e) {
 			logger.logSevere("Failed to create Watcher.",e);
 		}
@@ -57,14 +60,38 @@ public class Watcher {
                 
                 if (kind == ENTRY_MODIFY) {
                     System.out.println("File \""+ fileName + "\" has changed!");
+                    if(isFile(fileName)) {
+                		//manager.performFileCreated(fileName.toString()); ??
+                		System.out.println("File \""+ fileName + "\" is a file");
+                	}
+                	else {
+                		//manager.performDirCreated(fileName.toString()); ??
+                		System.out.println("File \""+ fileName + "\" is a directory");
+                	}
                 }
                 else if(kind == ENTRY_CREATE) {
                 	System.out.println("File \""+ fileName + "\" has been created!");
-                	manager.performFileCreated(fileName.toString());
-                	//manager.performDirCreated(fileName.toString()); ??
+                	if(isFile(fileName)) {
+                		//manager.performFileCreated(fileName.toString());
+                		System.out.println("File \""+ fileName + "\" is a file");
+                	}
+                	else {
+                		//manager.performDirCreated(fileName.toString()); ??
+                		System.out.println("File \""+ fileName + "\" is a directory");
+                	}
+               	
                 }
                 else if(kind == ENTRY_DELETE) {
                 	System.out.println("File \""+ fileName + "\" has been deleted!");
+                	if(isFile(fileName)) {
+                		//manager.performFileCreated(fileName.toString());
+                		System.out.println("File \""+ fileName + "\" is a file");
+                	}
+                	else {
+                		//manager.performDirCreated(fileName.toString()); ??
+                		System.out.println("File \""+ fileName + "\" is a directory");
+                	}
+                	
                 }
             }
              
@@ -75,8 +102,17 @@ public class Watcher {
         }
 	}
 	
+	private boolean isFile(Path file) {
+		Path p = Paths.get(path+file) ;
+    	if(p.toFile().isFile()) {
+			return true;
+        }
+		return false;
+	}
+	 
+	
 	public static void main(String[] args) {
-		Watcher w = new Watcher(null,"/home/valeriedaras/Desktop");
+		Watcher w = new Watcher(null,"/Users/valeriedaras/Desktop/");
 		w.start();
 	}
 	 
