@@ -24,14 +24,6 @@ public class MovieFile {
 		this.symbolicLinks = new ArrayList<String>() ;
 	}
 	
-	
-	public MovieFile(String title, String year, String extension) throws InvalidMovieFileException {
-		this.symbolicLinks = new ArrayList<String>() ;
-		this.setTitle(title);
-		this.setYear(year);
-		this.extension = extension ;
-	}
-	
 	public String getYear() {
 		return year;
 	}
@@ -51,12 +43,7 @@ public class MovieFile {
 	private void setTitle(Movie m) throws InvalidMovieFileException{
 		if (m != null) {
 			if (m.getOriginalTitle() != null) {
-				if(m.getYear() != null) {
-					this.title = setSeparator(m.getOriginalTitle())+SEPARATOR+m.getYear();
-				}
-				else {
-					this.title = setSeparator(m.getOriginalTitle());
-				}
+				this.title = setSeparator(m.getOriginalTitle());
 			}
 			else {
 				throw new InvalidMovieFileException();
@@ -83,6 +70,9 @@ public class MovieFile {
 	}
 	
 	public void update(Movie movie) throws InvalidMovieFileException {
+		if(movie == null) {
+			throw new InvalidMovieFileException();
+		}
 		this.movie = movie;
 		this.setTitle(movie);
 		this.setYear(movie.getYear());
