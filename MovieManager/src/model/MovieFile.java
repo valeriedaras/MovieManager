@@ -21,7 +21,7 @@ public class MovieFile {
 	private static final String SEPARATOR = "_" ;
 	
 	public MovieFile() {
-		
+		this.symbolicLinks = new ArrayList<String>() ;
 	}
 	
 	
@@ -97,6 +97,15 @@ public class MovieFile {
 		}
 		else {
 			return title+extension;
+		}
+	}
+	
+	public String getTxtPath() {
+		if (this.year != null) {
+			return title+SEPARATOR+year;
+		}
+		else {
+			return title;
 		}
 	}
 	

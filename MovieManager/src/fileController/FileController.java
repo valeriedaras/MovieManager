@@ -9,47 +9,27 @@ import utils.Log;
 public class FileController {
 	
 	private final FileReader reader ;
-	
-	private static boolean verbose = true ;
-	
-	private final Log logger = new Log("FileController", verbose);
+	private final FileWriter writer;
+	public static final String moviePath="src/";
+	public static final String movieInfoPath="src/";
 	
 	public FileController(){
 		reader = new FileReader();
+		writer = new FileWriter();
 	}
-	
-	private void createFile(String url){
-		File f = new File(url);
-		f.mkdirs();		
-	}
-
-	private void deleteFile(String url) throws FileNotFoundException{
-		
-		File file = new File (url);
-		file.delete();		
-	}
-	
-	
-	public void createFile(MovieFile j){
-		File f = new File (j.toString());
-		f.mkdirs();
-	
-	}
-	
-	
-	public void renameFile (String newUrl, String oldUrl)throws FileNotFoundException{
-		
-		Runtime R = Runtime.getRuntime();
-		
-		try {
-			R.exec("mv "+oldUrl+""+newUrl);
-		} catch (IOException e) {
-			logger.logSevere("Renaming failed: {0}",e);
 			
-		}
-	}
-	
 	public MovieFile performRetrieveInfoFile(String path){
 		return this.reader.retrieveInfosFile(path);
+	}
+	
+	public void performFileWrite (MovieFile f){
+		
+		try {
+			writer.fileWriter(f.toJSON(),movieInfoPath+ f.getTxtPath()+".txt");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 }

@@ -53,7 +53,7 @@ public class MovieManager {
 		} catch (InvalidMovieFileException e) {
 			logger.logSevere("Invalid Movie File Exception: the movie has to been moved into another folder.");
 		}
-		fileController.createFile(mFile);
+		fileController.performFileWrite(mFile);
 		// + fileController.updateSymbolicLinks(mFile);
 	}
 	
@@ -73,12 +73,14 @@ public class MovieManager {
 			fstream = new FileInputStream("src/corpus.txt");
 			try(BufferedReader br = new BufferedReader(new InputStreamReader(fstream))) {
 			    for(String line; (line = br.readLine()) != null; ) {
-					file = movieManager.getFileController().performRetrieveInfoFile(line) ;
-					Movie movie = movieManager.searchMovie(file);
-					if(movie != null) {
+					//file = movieManager.getFileController().performRetrieveInfoFile(line) ;
+					//Movie movie = movieManager.searchMovie(file);
+					/*if(movie != null) {
 						System.out.println("*************************");
 						System.out.println(movie);
 					}
+*/			    
+			    	movieManager.performFileCreated(line);
 			    }
 			} catch (IOException e) {
 				
