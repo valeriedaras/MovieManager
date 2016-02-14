@@ -41,7 +41,7 @@ public class MovieFile {
 	private void setTitle(Movie m) throws InvalidMovieFileException{
 		if (m != null) {
 			if (m.getOriginalTitle() != null) {
-				this.title = setSeparator(m.getOriginalTitle());
+				this.title = setSeparator(cleanString(m.getOriginalTitle()));
 			}
 			else {
 				throw new InvalidMovieFileException();
@@ -102,6 +102,11 @@ public class MovieFile {
 			return null;
 		}
 		return movie.toJSON();
+	}
+	
+	private String cleanString(String s) {
+		String str = s.replaceAll("[\\p{Punct}]+", "");
+		return str;
 	}
 	
 	private String setSeparator(String s) {

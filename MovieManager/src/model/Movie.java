@@ -150,7 +150,8 @@ public class Movie {
 		for (Genre g : this.genres) {
 			genres += "["+g.getName() +"] " ;
 		}
-		return "Original Title: " + title 
+		return "Original Title: " + originalTitle 
+				+"\nTitle: " + title
 				+"\nYear: " + year
 				+"\nSynopsis: " + synopsis
 				+"\nGenre: " + genres

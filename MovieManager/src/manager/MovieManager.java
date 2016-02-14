@@ -50,11 +50,11 @@ public class MovieManager {
 		}
 		try {
 			mFile.update(movie);
+			fileController.performFileWrite(mFile);
+			// + fileController.updateSymbolicLinks(mFile);
 		} catch (InvalidMovieFileException e) {
 			logger.logSevere("Invalid Movie File Exception: the movie has to been moved into another folder.");
 		}
-		fileController.performFileWrite(mFile);
-		// + fileController.updateSymbolicLinks(mFile);
 	}
 	
 	public void performFileDeleted(String path) {
