@@ -16,8 +16,6 @@ public class MovieFile {
 	
 	private List<String> symbolicLinks ;
 	
-	private static final String PATH = ".all" ;
-	
 	private static final String SEPARATOR = "_" ;
 	
 	public MovieFile() {
