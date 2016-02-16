@@ -1,14 +1,32 @@
 package directory;
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.WatchEvent;
 import java.nio.file.WatchKey;
 import java.nio.file.WatchService;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.filefilter.DirectoryFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 
 import manager.MovieManager;
+import model.MovieFile;
 import utils.Log;
 import static java.nio.file.StandardWatchEventKinds.*;
 
@@ -16,31 +34,40 @@ public class Watcher {
 	
 	private WatchService watcher ;
     
-    private Path dir ;
+    private Map<WatchKey, Path> keys ;
+    
+    private List<String> index ;
     
     private final MovieManager manager ;
     
-    private final String path ;
+    private final String rootPath ;
+    
+    private final String indexPath = "src/index.txt" ;
     
 	private static final boolean verbose = true;
 	
 	private static final Log logger = new Log("Watcher", verbose);
 	
+	private static final String[] validExtensions = {".avi", ".mkv", ".mp4"} ;
+	
 	public Watcher(MovieManager manager, String path) {
 		this.manager = manager;
-		this.path = path;
+		this.rootPath = path;
+		this.keys = new HashMap<WatchKey, Path>();
+		this.index = new ArrayList<String>();
+		loadIndex();
+		System.out.println("Index: "+index);
+		
 		try {
 			this.watcher = FileSystems.getDefault().newWatchService();
-			this.dir = Paths.get(path);
-			this.dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
-			
-			logger.logInfo("Watch Service registered for dir: {0}", dir.getFileName());
+			register(Paths.get(path));
 		} catch (IOException e) {
 			logger.logSevere("Failed to create Watcher.",e);
 		}
 	}
 	
 	public void start() {
+		this.initAll();
 		while (true) {
             WatchKey key;
             try {
@@ -51,47 +78,32 @@ public class Watcher {
              
             for (WatchEvent<?> event : key.pollEvents()) {
                 WatchEvent.Kind<?> kind = event.kind();
-                 
+                
                 @SuppressWarnings("unchecked")
                 WatchEvent<Path> ev = (WatchEvent<Path>) event;
                 Path fileName = ev.context();
-                 
-                System.out.println(kind.name() + ": " + fileName);
                 
                 if (kind == ENTRY_MODIFY) {
-                    System.out.println("File \""+ fileName + "\" has changed!");
-                    if(isFile(fileName)) {
-                		//manager.performFileCreated(fileName.toString()); ??
-                		System.out.println("File \""+ fileName + "\" is a file");
-                	}
-                	else {
-                		//manager.performDirCreated(fileName.toString()); ??
-                		System.out.println("File \""+ fileName + "\" is a directory");
-                	}
+                    System.out.println(">> \""+ fileName + "\" has changed!");
+                    this.performAllMovies(absolutPath(key,fileName));
+                    /*if(!isFile(absolutPath(key,fileName))) {
+                    	System.out.println(">> Check for new movies in changed dir.");
+                    	// Get all movies in that new directory
+                		List<Path> movies = this.getAllMovieFiles(absolutPath(key,fileName));
+                		if(movies!= null) {
+                			for(Path str : movies) {
+                    			manager.performFileCreated(absolutPath(key,str), str.getFileName().toString());
+                    		}
+                		}
+                    }*/
                 }
                 else if(kind == ENTRY_CREATE) {
-                	System.out.println("File \""+ fileName + "\" has been created!");
-                	if(isFile(fileName)) {
-                		//manager.performFileCreated(fileName.toString());
-                		System.out.println("File \""+ fileName + "\" is a file");
-                	}
-                	else {
-                		//manager.performDirCreated(fileName.toString()); ??
-                		System.out.println("File \""+ fileName + "\" is a directory");
-                	}
-               	
+                	System.out.println(">> \""+ fileName + "\" has been created!");
+                	this.performAllMovies(absolutPath(key,fileName));
+                	
                 }
                 else if(kind == ENTRY_DELETE) {
-                	System.out.println("File \""+ fileName + "\" has been deleted!");
-                	if(isFile(fileName)) {
-                		//manager.performFileCreated(fileName.toString());
-                		System.out.println("File \""+ fileName + "\" is a file");
-                	}
-                	else {
-                		//manager.performDirCreated(fileName.toString()); ??
-                		System.out.println("File \""+ fileName + "\" is a directory");
-                	}
-                	
+                	System.out.println(">> \""+ fileName + "\" has been deleted!");                	
                 }
             }
              
@@ -102,18 +114,114 @@ public class Watcher {
         }
 	}
 	
-	private boolean isFile(Path file) {
-		Path p = Paths.get(path+file) ;
-    	if(p.toFile().isFile()) {
-			return true;
-        }
+	private void initAll() {
+		performAllMovies(rootPath) ;
+	}
+	
+	private void performAllMovies(String dir) {
+		// Get all movies in that new directory
+		List<Path> movies = this.getAllMovieFiles(dir);
+		if(movies!= null) {
+			for(Path str : movies) {
+    			manager.performFileCreated(str.toString(), str.getFileName().toString());
+    		}
+		}
+	}
+	
+	private String absolutPath(WatchKey key, Path path) {
+		return keys.get(key)+"/"+path.getFileName().toString() ;
+	}
+	
+	private void register(Path dir) {
+		WatchKey key;
+		try {
+			key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
+			this.keys.put(key, dir);
+			logger.logInfo("Watch Service registered for dir: {0}", dir.getFileName());
+		} catch (IOException e) {
+			logger.logInfo("Failed to register dir: {0} - {1}", new Object[] {dir.getFileName(), e.toString()});
+		}
+	}
+	
+	private void register(String dir) {
+		register(Paths.get(dir));
+	}
+	
+	private boolean isValidFile(String path) {
+		if(path != null) {
+			for(String str : validExtensions) {
+				if(path.endsWith(str)) {
+					return true;
+				}
+			}
+		}
 		return false;
 	}
-	 
+	
+	private List<Path> getAllMovieFiles(String path) {
+		File dir = new File(path);
+		if(dir.isDirectory()) {
+			Collection<File> files = FileUtils.listFilesAndDirs(dir, TrueFileFilter.INSTANCE, DirectoryFileFilter.DIRECTORY) ;
+			List<Path> results = new ArrayList<Path>() ; 
+			for(File f : files) {
+				if (f.isFile()) {
+					if(isValidFile(f.getName())) {
+						// Check if the movie is already known
+						if(!this.index.contains(new String(f.getAbsolutePath().toString()))) {
+							// Add to the list
+							results.add(f.toPath());
+							index.add(f.getPath());
+						}
+					}
+				}
+				else if(f.isDirectory() && !f.equals(dir)) {
+					register(f.getAbsolutePath());
+				}
+			}
+			return results;
+		}
+		return null;
+	}
+	
+	private void loadIndex() {
+		File index = new File(indexPath);
+		if(index.exists()) {
+			FileInputStream fstream;
+			try {
+				fstream = new FileInputStream(indexPath);
+				try(BufferedReader br = new BufferedReader(new InputStreamReader(fstream))) {
+				    for(String line; (line = br.readLine()) != null; ) {
+				    	this.index.add(line);
+				    }
+				} catch (IOException e) {
+					logger.logSevere("Failed to read in Index: {0}", e.toString());
+				}
+			} catch (FileNotFoundException e) {
+				logger.logSevere("File not found. Should never happen.");
+			}
+		}
+		else {
+			try {
+				index.createNewFile();
+			} catch (IOException e) {
+				logger.logSevere("Failed to create Index: {0}", e.toString());
+			}
+		}
+	}
+	
+	public void updateIndex(MovieFile m) {
+		logger.logInfo("Update of Index: {0}", m.getNameWithAbsolutPath());
+		try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(indexPath, true)))) {
+		    out.println(m.getNameWithAbsolutPath());
+		    out.close();
+		}catch (IOException e) {
+		    //exception handling left as an exercise for the reader
+		}
+	}
 	
 	public static void main(String[] args) {
-		Watcher w = new Watcher(null,"/Users/valeriedaras/Desktop/");
+		Watcher w = new Watcher(new MovieManager(),"/Users/valeriedaras/Desktop/");
 		w.start();
 	}
-	 
+
 }

@@ -19,7 +19,7 @@ public class FileWriter {
 
 	protected void createFile(String url){
 		File f = new File(url);
-		f.mkdirs();		
+		f.mkdirs();
 	}
 
 	protected void deleteFile(String url) throws FileNotFoundException{
@@ -32,24 +32,19 @@ public class FileWriter {
 	protected void createFile(MovieFile j){
 		File f = new File (j.toString());
 		f.mkdirs();
-
 	}
 
 
 	protected void renameFile (String newUrl, String oldUrl)throws FileNotFoundException{
-
 		Runtime R = Runtime.getRuntime();
-
 		try {
 			R.exec("mv "+oldUrl+" "+newUrl);
 		} catch (IOException e) {
 			logger.logSevere("Renaming failed: {0}",e);
-
 		}
 	}
 
 	protected void fileWriter (String content, String path){
-
 		File f = new File(path);	
 		OutputStreamWriter writer=null;
 		try {

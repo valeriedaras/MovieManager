@@ -1,6 +1,7 @@
 package model;
 
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,6 +18,8 @@ public class MovieFile {
 	private List<String> symbolicLinks ;
 	
 	private static final String SEPARATOR = "_" ;
+	
+	private String path ; 
 	
 	public MovieFile() {
 		this.symbolicLinks = new ArrayList<String>() ;
@@ -61,6 +64,23 @@ public class MovieFile {
 		this.extension = extension;
 	}
 	
+	public String getPath(){
+		return path;
+	}
+	
+	public String getNameWithAbsolutPath(){
+		return path+this.toString();
+	}
+	
+	public void setPath(String path){
+		if(Paths.get(path).toFile().isDirectory()) {
+			this.path = path;
+		}
+		else {
+			this.path = Paths.get(path).getParent().toString()+"/";
+		}
+	}
+	
 	private void addSymbolicLink(Genre g) {
 		if (!this.symbolicLinks.contains(g.getName())) {
 			this.symbolicLinks.add(g.getName());
@@ -89,12 +109,13 @@ public class MovieFile {
 	}
 	
 	public String getTxtPath() {
-		if (this.year != null) {
+		return this.toString();
+		/*if (this.year != null) {
 			return title+SEPARATOR+year;
 		}
 		else {
 			return title;
-		}
+		}*/
 	}
 	
 	public String toJSON() throws IOException {

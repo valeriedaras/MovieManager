@@ -1,11 +1,6 @@
 package manager;
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStreamReader;
-
+import directory.Watcher;
 import fileController.FileController;
 import model.InvalidMovieFileException;
 import model.Movie;
@@ -21,6 +16,8 @@ public class MovieManager {
 	
 	private FileController fileController ;
 	
+	private Watcher watcher ;
+	
 	/**
 	 * Logger
 	 */
@@ -29,6 +26,8 @@ public class MovieManager {
 	public MovieManager() {
 		this.allocineManager = new AllocineManager() ;
 		this.fileController = new FileController() ;
+		this.watcher = new Watcher(this, "/Users/valeriedaras/Desktop/");
+		this.watcher.start();
 	}
 	
 	public Movie searchMovie(MovieFile file) {
@@ -40,18 +39,21 @@ public class MovieManager {
 		return null;
 	}
 	
-	public void performFileCreated(String path) {
-		logger.logInfo("Perform File Created: {0}",path);
-		MovieFile mFile = this.fileController.performRetrieveInfoFile(path);
+	public void performFileCreated(String path, String name) {
+		System.out.println("*************************");
+		logger.logInfo("Perform File Created: {0}",name);
+		MovieFile mFile = this.fileController.performRetrieveInfoFile(name);
+		mFile.setPath(path);
 		Movie movie = searchMovie(mFile);
 		if(movie != null) {
-			System.out.println("*************************");
 			System.out.println(movie);
 		}
 		try {
 			mFile.update(movie);
 			fileController.performFileWrite(mFile);
+			// + fileController.updateMovieFile(mFile)
 			// + fileController.updateSymbolicLinks(mFile);
+			watcher.updateIndex(mFile);
 		} catch (InvalidMovieFileException e) {
 			logger.logSevere("Invalid Movie File Exception: the movie has to been moved into another folder.");
 		}
@@ -66,28 +68,7 @@ public class MovieManager {
 	}
 	
 	public static void main(String[] args) {
-		MovieManager movieManager = new MovieManager() ;
-		FileInputStream fstream;
-		try {
-			fstream = new FileInputStream("src/corpus.txt");
-			try(BufferedReader br = new BufferedReader(new InputStreamReader(fstream))) {
-			    for(String line; (line = br.readLine()) != null; ) {
-					//file = movieManager.getFileController().performRetrieveInfoFile(line) ;
-					//Movie movie = movieManager.searchMovie(file);
-					/*if(movie != null) {
-						System.out.println("*************************");
-						System.out.println(movie);
-					}
-*/			    
-			    	movieManager.performFileCreated(line);
-			    }
-			} catch (IOException e) {
-				
-			}
-		} catch (FileNotFoundException e) {
-			
-		}
-		
+		new MovieManager() ;
 	}
 
 }

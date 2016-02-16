@@ -28,8 +28,10 @@ public class MovieMatcher implements Matcher {
 					}
 				}
 			}
-			if (res.getYear().equals(opQuery)) {
-				res.setScore(score += 10) ;
+			if (res.getYear()!=null) {
+				if (res.getYear().equals(opQuery)) {
+					res.setScore(score += 10) ;
+				}
 			}
 			if (res.getOriginalTitle().equals(query)) {
 				res.setScore(score += 10) ;
