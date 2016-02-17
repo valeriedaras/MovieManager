@@ -1,15 +1,8 @@
 package fileController;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import model.MovieFile;
 
-
-/*
- * TO DO:
- * - Create "init()" function called from the constructor : creating all folders
- * - Create "performUpdateMovie(MovieFile)" : renaming the movie + creating all genres 
- * 			+ creating all symbolic links
- * - Create "performUnknownMovie(MovieFile)" : moving the movie into unknownMoviePath  
- */
 
 public class FileController {
 	
@@ -18,12 +11,19 @@ public class FileController {
 	public static final String moviePath="src/";
 	public static final String unknownMoviePath="src/unknownMovies";
 	public static final String movieInfoPath="src/movieInfo/";
+	public static final String movieGenrePath="src/movieGenre/";
 	
 	
 	public FileController(){
 		reader = new FileReader();
 		writer = new FileWriter();
 		// To remove later
+		writer.createFile(movieInfoPath);
+	}
+	
+	protected void init (){
+		writer.createFile(moviePath);
+		writer.createFile(unknownMoviePath);
 		writer.createFile(movieInfoPath);
 	}
 			
@@ -42,5 +42,38 @@ public class FileController {
 	
 	public static void main(String[] args){
 		new FileController();
+	}
+	
+	public void performUpdateMovie(MovieFile f){
+		
+		Runtime R = Runtime.getRuntime();
+		//Renommage des films avec le nom title+SEPARATOR+year+extension(MovieFile)
+		try {
+			R.exec("mv "+f.getNameWithAbsolutPath()+" "+f.toString());
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		//Création des dossiers GENRE et crée les liens qui vont avec
+		for (String str: f.getSymbolicLinks()){
+			writer.createFile(str);	
+			try {
+				R.exec("ln -s "+moviePath+f.getTitle()+" "+movieGenrePath+f.getTitle());
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}		
+	}
+	//Déplace un film non vers le unknownMoviePath
+	public void performUnknownMovie(MovieFile f){
+		
+		try {
+			writer.renameFile(unknownMoviePath+"/"+f.getTitle()+f.getExtension(), f.getNameWithAbsolutPath());
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
 	}
 }
