@@ -56,7 +56,7 @@ public class Watcher {
 		this.keys = new HashMap<WatchKey, Path>();
 		this.index = new ArrayList<String>();
 		loadIndex();
-		System.out.println("Index: "+index);
+		logger.logInfo("Index: {0}", index);
 		
 		try {
 			this.watcher = FileSystems.getDefault().newWatchService();
@@ -86,16 +86,7 @@ public class Watcher {
                 if (kind == ENTRY_MODIFY) {
                     System.out.println(">> \""+ fileName + "\" has changed!");
                     this.performAllMovies(absolutPath(key,fileName));
-                    /*if(!isFile(absolutPath(key,fileName))) {
-                    	System.out.println(">> Check for new movies in changed dir.");
-                    	// Get all movies in that new directory
-                		List<Path> movies = this.getAllMovieFiles(absolutPath(key,fileName));
-                		if(movies!= null) {
-                			for(Path str : movies) {
-                    			manager.performFileCreated(absolutPath(key,str), str.getFileName().toString());
-                    		}
-                		}
-                    }*/
+
                 }
                 else if(kind == ENTRY_CREATE) {
                 	System.out.println(">> \""+ fileName + "\" has been created!");
@@ -209,13 +200,37 @@ public class Watcher {
 		}
 	}
 	
-	public void updateIndex(MovieFile m) {
-		logger.logInfo("Update of Index: {0}", m.getNameWithAbsolutPath());
-		try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(indexPath, true)))) {
-		    out.println(m.getNameWithAbsolutPath());
-		    out.close();
-		}catch (IOException e) {
-		    //exception handling left as an exercise for the reader
+	public void addToIndex(MovieFile m) {
+		if(!index.contains(m.getNameWithAbsolutPath())) {
+			logger.logInfo("Add to Index: {0}", m.getNameWithAbsolutPath());
+			try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(indexPath, true)))) {
+			    out.println(m.getNameWithAbsolutPath());
+			    out.close();
+			}catch (IOException e) {
+			    //exception handling left as an exercise for the reader
+			}
+		}
+	}
+	
+	public void removeFromIndex(MovieFile m) {
+		if(index.contains(m.getNameWithAbsolutPath())) {
+			logger.logInfo("Remove from Index: {0}", m.getNameWithAbsolutPath());
+			
+			FileInputStream fstream;
+			try {
+				fstream = new FileInputStream(indexPath);
+				try(BufferedReader br = new BufferedReader(new InputStreamReader(fstream))) {
+				    for(String line; (line = br.readLine()) != null; ) {
+				    	if(line.equals(m.getNameWithAbsolutPath())) {
+				    		
+				    	}
+				    }
+				} catch (IOException e) {
+					logger.logSevere("Failed to read in Index: {0}", e.toString());
+				}
+			} catch (FileNotFoundException e) {
+				logger.logSevere("File not found. Should never happen.");
+			}
 		}
 	}
 	

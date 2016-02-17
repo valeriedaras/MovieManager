@@ -5,10 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-
-import org.json.simple.JSONObject;
-
-import allocine.model.Writer;
 import model.MovieFile;
 import utils.Log;
 
@@ -19,7 +15,9 @@ public class FileWriter {
 
 	protected void createFile(String url){
 		File f = new File(url);
-		f.mkdirs();
+		if(!f.exists()){
+			f.mkdirs();
+		}
 	}
 
 	protected void deleteFile(String url) throws FileNotFoundException{

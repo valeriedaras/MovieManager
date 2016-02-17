@@ -34,7 +34,8 @@ public class MovieManager {
 		try {
 			return allocineManager.searchMovies(file);
 		} catch (AllocineException | NoMovieFoundException e) {
-			logger.logInfo("Movie \"{0}\" not found. Has to be moved into another folder.", file);
+			logger.logInfo("No Movie Found Exception: Movie \"{0}\" not found. Has to be moved into another folder.", file);
+			// fileController.move() 
 		}
 		return null;
 	}
@@ -52,15 +53,16 @@ public class MovieManager {
 			mFile.update(movie);
 			fileController.performFileWrite(mFile);
 			// + fileController.updateMovieFile(mFile)
-			// + fileController.updateSymbolicLinks(mFile);
-			watcher.updateIndex(mFile);
+			watcher.addToIndex(mFile);
 		} catch (InvalidMovieFileException e) {
-			logger.logSevere("Invalid Movie File Exception: the movie has to been moved into another folder.");
+			logger.logSevere("Invalid Movie File Exception: Movie \"{0}\" has to been moved into another folder.", mFile);
+			// fileController.move() 
 		}
 	}
 	
 	public void performFileDeleted(String path) {
 		logger.logInfo("Perform File Deleted: {0}",path);
+		// Watcher: Remove from index 
 	}
 	
 	public FileController getFileController() {
