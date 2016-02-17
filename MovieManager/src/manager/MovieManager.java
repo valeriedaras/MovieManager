@@ -50,7 +50,7 @@ public class MovieManager {
 			System.out.println(movie);
 		}
 		try {
-			mFile.update(movie);
+			mFile.updateMovie(movie);
 			fileController.performFileWrite(mFile);
 			// + fileController.updateMovieFile(mFile)
 			watcher.addToIndex(mFile);
