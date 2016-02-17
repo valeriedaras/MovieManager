@@ -85,16 +85,25 @@ public class Watcher {
                 
                 if (kind == ENTRY_MODIFY) {
                     System.out.println(">> \""+ fileName + "\" has changed!");
-                    this.performAllMovies(absolutPath(key,fileName));
+                    this.performAllMovies(absolutePath(key,fileName));
 
                 }
                 else if(kind == ENTRY_CREATE) {
                 	System.out.println(">> \""+ fileName + "\" has been created!");
-                	this.performAllMovies(absolutPath(key,fileName));
+                	this.performAllMovies(absolutePath(key,fileName));
                 	
                 }
                 else if(kind == ENTRY_DELETE) {
-                	System.out.println(">> \""+ fileName + "\" has been deleted!");                	
+                	System.out.println(">> \""+ fileName + "\" has been deleted!");
+                	this.manager.performFileDeleted(absolutePath(key,fileName));
+                	
+                	if(Paths.get(absolutePath(key,fileName)).toFile().isFile()){
+                		System.out.println(">> \""+ fileName + "\" is a File");
+                		//this.manager.performFileDeleted(absolutePath(key,fileName));
+                	}
+                	else {
+                		System.out.println(">> \""+ fileName + "\" is a Directory");
+                	}
                 }
             }
              
@@ -106,20 +115,43 @@ public class Watcher {
 	}
 	
 	private void initAll() {
-		performAllMovies(rootPath) ;
+		// Get all movies in that new directory
+		List<Path> movies = this.getAllMovieFiles(rootPath);
+		if(movies!= null) {
+			List<String> filesToRemove = new ArrayList<String>();
+			for(String str : index) {
+				boolean found = false; 
+				for(Path p : movies) {
+					if(str.equals(p.toAbsolutePath().toString())) {
+						found=true;
+					}
+				}
+				if(!found){
+					filesToRemove.add(str);
+				}
+			}
+			for(String str : filesToRemove) {
+				this.removeFromIndex(str);
+			}
+			
+			
+			for(Path str : movies) {
+	   			manager.performFileCreated(str.toString(), str.getFileName().toString());
+	   		}
+		}
 	}
 	
 	private void performAllMovies(String dir) {
 		// Get all movies in that new directory
-		List<Path> movies = this.getAllMovieFiles(dir);
+		List<Path> movies = this.getAllMovieFiles(rootPath);
 		if(movies!= null) {
 			for(Path str : movies) {
-    			manager.performFileCreated(str.toString(), str.getFileName().toString());
-    		}
+	   			manager.performFileCreated(str.toString(), str.getFileName().toString());
+	   		}
 		}
 	}
 	
-	private String absolutPath(WatchKey key, Path path) {
+	private String absolutePath(WatchKey key, Path path) {
 		return keys.get(key)+"/"+path.getFileName().toString() ;
 	}
 	
@@ -212,31 +244,34 @@ public class Watcher {
 		}
 	}
 	
-	public void removeFromIndex(MovieFile m) {
-		if(index.contains(m.getNameWithAbsolutPath())) {
-			logger.logInfo("Remove from Index: {0}", m.getNameWithAbsolutPath());
-			
-			FileInputStream fstream;
-			try {
-				fstream = new FileInputStream(indexPath);
-				try(BufferedReader br = new BufferedReader(new InputStreamReader(fstream))) {
-				    for(String line; (line = br.readLine()) != null; ) {
-				    	if(line.equals(m.getNameWithAbsolutPath())) {
-				    		
-				    	}
-				    }
-				} catch (IOException e) {
-					logger.logSevere("Failed to read in Index: {0}", e.toString());
-				}
-			} catch (FileNotFoundException e) {
-				logger.logSevere("File not found. Should never happen.");
+	public void removeFromIndex(String m) {
+		for(int i=0; i<index.size(); i++){
+			if(index.get(i).startsWith(m)) {
+				logger.logInfo("Remove from Index: {0}", m);
+				index.remove(i);
+				updateIndex();
 			}
 		}
 	}
 	
-	public static void main(String[] args) {
-		Watcher w = new Watcher(new MovieManager(),"/Users/valeriedaras/Desktop/");
-		w.start();
+	private void updateIndex() {
+		File index = new File(indexPath);
+		if(index.exists()) {
+			index.delete();
+			try {
+				index.createNewFile();
+				try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(indexPath, true)))) {
+					for(String str: this.index){
+						out.println(str);
+					}
+					out.close();
+				}catch (IOException e) {
+				    //exception handling left as an exercise for the reader
+				}
+			} catch (IOException e) {
+				
+			}
+		}
 	}
-
+	
 }

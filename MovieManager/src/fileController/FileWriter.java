@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+
 import model.MovieFile;
 import utils.Log;
 
@@ -21,22 +22,26 @@ public class FileWriter {
 	}
 
 	protected void deleteFile(String url) throws FileNotFoundException{
-
 		File file = new File (url);
-		file.delete();		
+		if(file.exists()){
+			file.delete();
+		}
 	}
 
 
 	protected void createFile(MovieFile j){
 		File f = new File (j.toString());
-		f.mkdirs();
+		if(!f.exists()){
+			f.mkdirs();
+		}
 	}
 
 
-	protected void renameFile (String newUrl, String oldUrl)throws FileNotFoundException{
+	protected void renameFile (String newUrl, String oldUrl) throws FileNotFoundException{
 		Runtime R = Runtime.getRuntime();
 		try {
 			R.exec("mv "+oldUrl+" "+newUrl);
+			System.out.println("mv "+oldUrl+" "+newUrl);
 		} catch (IOException e) {
 			logger.logSevere("Renaming failed: {0}",e);
 		}
@@ -62,13 +67,21 @@ public class FileWriter {
 				e.printStackTrace();
 			}
 		}
-
-
-
-
 	}
 
-
+	public static void main(String[] args){
+		FileWriter writer = new FileWriter();
+		try {
+			String oldFile = "/Users/valeriedaras/Desktop/TOTO.avi" ;
+			String newFile = "/Users/valeriedaras/Desktop/TOTO2.avi" ;
+			writer.createFile(oldFile);
+			writer.renameFile(newFile, oldFile);
+			writer.deleteFile(oldFile);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+		
+	}
 
 
 }

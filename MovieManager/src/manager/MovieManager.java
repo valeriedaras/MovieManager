@@ -44,7 +44,7 @@ public class MovieManager {
 		System.out.println("*************************");
 		logger.logInfo("Perform File Created: {0}",name);
 		MovieFile mFile = this.fileController.performRetrieveInfoFile(name);
-		mFile.setPath(path);
+		mFile.setAbsolutePath(path);
 		Movie movie = searchMovie(mFile);
 		if(movie != null) {
 			System.out.println(movie);
@@ -53,6 +53,7 @@ public class MovieManager {
 			mFile.updateMovie(movie);
 			fileController.performFileWrite(mFile);
 			// + fileController.updateMovieFile(mFile)
+			mFile.updateFile();
 			watcher.addToIndex(mFile);
 		} catch (InvalidMovieFileException e) {
 			logger.logSevere("Invalid Movie File Exception: Movie \"{0}\" has to been moved into another folder.", mFile);
@@ -62,7 +63,7 @@ public class MovieManager {
 	
 	public void performFileDeleted(String path) {
 		logger.logInfo("Perform File Deleted: {0}",path);
-		// Watcher: Remove from index 
+		watcher.removeFromIndex(path);
 	}
 	
 	public FileController getFileController() {

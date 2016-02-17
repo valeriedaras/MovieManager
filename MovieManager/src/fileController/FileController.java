@@ -17,8 +17,7 @@ public class FileController {
 	public FileController(){
 		reader = new FileReader();
 		writer = new FileWriter();
-		// To remove later
-		writer.createFile(movieInfoPath);
+		init();
 	}
 	
 	protected void init (){
@@ -42,6 +41,8 @@ public class FileController {
 	
 	public static void main(String[] args){
 		new FileController();
+		
+		
 	}
 	
 	public void performUpdateMovie(MovieFile f){
@@ -54,7 +55,7 @@ public class FileController {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		//Création des dossiers GENRE et crée les liens qui vont avec
+		//Crï¿½ation des dossiers GENRE et crï¿½e les liens qui vont avec
 		for (String str: f.getSymbolicLinks()){
 			writer.createFile(str);	
 			try {
@@ -65,7 +66,7 @@ public class FileController {
 			}
 		}		
 	}
-	//Déplace un film non vers le unknownMoviePath
+	//Dï¿½place un film non vers le unknownMoviePath
 	public void performUnknownMovie(MovieFile f){
 		
 		try {

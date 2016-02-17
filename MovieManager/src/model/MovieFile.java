@@ -72,7 +72,7 @@ public class MovieFile {
 		return path+this.toString();
 	}
 	
-	public void setPath(String path){
+	public void setAbsolutePath(String path){
 		if(Paths.get(path).toFile().isDirectory()) {
 			this.path = path;
 		}
