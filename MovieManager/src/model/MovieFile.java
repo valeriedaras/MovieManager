@@ -15,11 +15,11 @@ public class MovieFile {
 	
 	private String extension ;
 	
+	private String path ;
+	
 	private List<String> symbolicLinks ;
 	
 	private static final String SEPARATOR = "_" ;
-	
-	private String path ; 
 	
 	public MovieFile() {
 		this.symbolicLinks = new ArrayList<String>() ;
@@ -87,15 +87,20 @@ public class MovieFile {
 		}
 	}
 	
-	public void update(Movie movie) throws InvalidMovieFileException {
+	public void updateMovie(Movie movie) throws InvalidMovieFileException {
 		if(movie == null) {
 			throw new InvalidMovieFileException();
 		}
 		this.movie = movie;
-		this.setTitle(movie);
-		this.setYear(movie.getYear());
 		for(Genre g : movie.getGenres()) {
 			this.addSymbolicLink(g);
+		}
+	}
+	
+	public void updateFile() throws InvalidMovieFileException {
+		if (this.movie != null) {
+			this.setTitle(this.movie);
+			this.setYear(movie.getYear());
 		}
 	}
 	
@@ -110,12 +115,6 @@ public class MovieFile {
 	
 	public String getTxtPath() {
 		return this.toString();
-		/*if (this.year != null) {
-			return title+SEPARATOR+year;
-		}
-		else {
-			return title;
-		}*/
 	}
 	
 	public String toJSON() throws IOException {
@@ -137,6 +136,10 @@ public class MovieFile {
 			str+= strTab[i] + SEPARATOR ;
 		}
 		return str+strTab[strTab.length-1];
+	}
+	
+	public List<String> getSymbolicLinks() {
+		return this.symbolicLinks;
 	}
 }
 
