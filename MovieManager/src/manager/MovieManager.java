@@ -26,7 +26,7 @@ public class MovieManager {
 	public MovieManager() {
 		this.allocineManager = new AllocineManager() ;
 		this.fileController = new FileController() ;
-		this.watcher = new Watcher(this, "/Users/valeriedaras/Desktop/");
+		this.watcher = new Watcher(this, "/Users/valeriedaras/Desktop/Movies/");
 		this.watcher.start();
 	}
 	
@@ -35,7 +35,7 @@ public class MovieManager {
 			return allocineManager.searchMovies(file);
 		} catch (AllocineException | NoMovieFoundException e) {
 			logger.logInfo("No Movie Found Exception: Movie \"{0}\" not found. Has to be moved into another folder.", file);
-			// fileController.move() 
+			fileController.performUnknownMovie(file);
 		}
 		return null;
 	}
@@ -45,19 +45,18 @@ public class MovieManager {
 		logger.logInfo("Perform File Created: {0}",name);
 		MovieFile mFile = this.fileController.performRetrieveInfoFile(name);
 		mFile.setAbsolutePath(path);
+		mFile.setFileName(name);
 		Movie movie = searchMovie(mFile);
-		if(movie != null) {
-			System.out.println(movie);
-		}
 		try {
 			mFile.updateMovie(movie);
 			fileController.performFileWrite(mFile);
-			// + fileController.updateMovieFile(mFile)
+			fileController.performUpdateMovie(mFile);
 			mFile.updateFile();
+			fileController.performSymbolicLinks(mFile);
 			watcher.addToIndex(mFile);
 		} catch (InvalidMovieFileException e) {
 			logger.logSevere("Invalid Movie File Exception: Movie \"{0}\" has to been moved into another folder.", mFile);
-			// fileController.move() 
+			fileController.performUnknownMovie(mFile); 
 		}
 	}
 	

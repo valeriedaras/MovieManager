@@ -41,7 +41,6 @@ public class FileWriter {
 		Runtime R = Runtime.getRuntime();
 		try {
 			R.exec("mv "+oldUrl+" "+newUrl);
-			System.out.println("mv "+oldUrl+" "+newUrl);
 		} catch (IOException e) {
 			logger.logSevere("Renaming failed: {0}",e);
 		}
@@ -54,7 +53,6 @@ public class FileWriter {
 			writer = new OutputStreamWriter (new FileOutputStream(f));
 			writer.append(content);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		finally{
@@ -63,7 +61,6 @@ public class FileWriter {
 					writer.close();
 				}
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}

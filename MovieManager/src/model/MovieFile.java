@@ -17,6 +17,8 @@ public class MovieFile {
 	
 	private String path ;
 	
+	private String fileName ;
+	
 	private List<String> symbolicLinks ;
 	
 	private static final String SEPARATOR = "_" ;
@@ -25,11 +27,11 @@ public class MovieFile {
 		this.symbolicLinks = new ArrayList<String>() ;
 	}
 	
-	public String getYear() {
+	public String getFileYear() {
 		return year;
 	}
 	
-	public void setYear(String year) {
+	public void setFileYear(String year) {
 		if (year != null) {
 			if (year.length() == 4) {
 				this.year = year ;
@@ -37,11 +39,19 @@ public class MovieFile {
 		}
 	}
 	
-	public String getTitle() {
+	public String getFileTitle() {
 		return title;
 	}
+	
+	public String getFileName(){
+		return path+fileName;
+	}
+	
+	public void setFileName(String f){
+		this.fileName = f;
+	}
 
-	private void setTitle(Movie m) throws InvalidMovieFileException{
+	private void setFileName(Movie m) throws InvalidMovieFileException{
 		if (m != null) {
 			if (m.getOriginalTitle() != null) {
 				this.title = setSeparator(cleanString(m.getOriginalTitle()));
@@ -52,24 +62,16 @@ public class MovieFile {
 		}
 	}
 	
-	public void setTitle(String m) {
+	public void setFileTitle(String m) {
 		this.title = m ;
 	}
 
-	public String getExtension() {
-		return extension;
-	}
-
-	public void setExtension(String extension) {
+	public void setFileExtension(String extension) {
 		this.extension = extension;
 	}
 	
-	public String getPath(){
-		return path;
-	}
-	
-	public String getNameWithAbsolutPath(){
-		return path+this.toString();
+	public String getFileNameWithAbsolutePath(){
+		return path+this.getCompleteFileName();
 	}
 	
 	public void setAbsolutePath(String path){
@@ -81,9 +83,15 @@ public class MovieFile {
 		}
 	}
 	
+	public List<String> getSymbolicLinks() {
+		System.out.println("Links:" + this.symbolicLinks);
+		return this.symbolicLinks;
+	}
+	
 	private void addSymbolicLink(Genre g) {
-		if (!this.symbolicLinks.contains(g.getName())) {
-			this.symbolicLinks.add(g.getName());
+		String gClean = setSeparator(cleanString(g.getName()));
+		if (!this.symbolicLinks.contains(gClean)) {
+			this.symbolicLinks.add(gClean);
 		}
 	}
 	
@@ -99,18 +107,22 @@ public class MovieFile {
 	
 	public void updateFile() throws InvalidMovieFileException {
 		if (this.movie != null) {
-			this.setTitle(this.movie);
-			this.setYear(movie.getYear());
+			this.setFileName(this.movie);
+			this.setFileYear(movie.getYear());
 		}
 	}
 	
 	public String toString() {
+		return getCompleteFileName() ;
+	}
+	
+	public String getCompleteFileName() {
 		if (this.year != null) {
 			return title+SEPARATOR+year+extension;
 		}
 		else {
 			return title+extension;
-		}
+		} 
 	}
 	
 	public String getTxtPath() {
@@ -122,6 +134,43 @@ public class MovieFile {
 			return null;
 		}
 		return movie.toJSON();
+	}
+	
+	public String getCompleteMovieNameWithAbsolutePath() {
+		if(movie != null) {
+			if (movie.getYear() != null) {
+				return path + setSeparator(cleanString(movie.getOriginalTitle()))+SEPARATOR+movie.getYear()+extension;
+			}
+			else {
+				return path + setSeparator(cleanString(movie.getOriginalTitle())) + extension;
+			}
+			
+		}
+		return null;
+	}
+	
+	public String getCompleteMovieName() {
+		if(movie != null) {
+			if (movie.getYear() != null) {
+				return setSeparator(cleanString(movie.getOriginalTitle()))+SEPARATOR+movie.getYear();
+			}
+			else {
+				return setSeparator(cleanString(movie.getOriginalTitle()));
+			}
+		}
+		return null;
+	}
+	
+	public String getCompleteMovieNameWithExt() {
+		if(movie != null) {
+			if (movie.getYear() != null) {
+				return setSeparator(cleanString(movie.getOriginalTitle()))+SEPARATOR+movie.getYear()+extension;
+			}
+			else {
+				return setSeparator(cleanString(movie.getOriginalTitle()))+ extension;
+			}
+		}
+		return null;
 	}
 	
 	private String cleanString(String s) {
@@ -137,9 +186,6 @@ public class MovieFile {
 		}
 		return str+strTab[strTab.length-1];
 	}
-	
-	public List<String> getSymbolicLinks() {
-		return this.symbolicLinks;
-	}
+
 }
 

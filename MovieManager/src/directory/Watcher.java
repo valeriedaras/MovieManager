@@ -48,7 +48,7 @@ public class Watcher {
 	
 	private static final Log logger = new Log("Watcher", verbose);
 	
-	private static final String[] validExtensions = {".avi", ".mkv", ".mp4"} ;
+	private static final String[] validExtensions = {".avi", ".mkv", ".mp4", ".mov", ".mpg", ".mpa", ".wma", ".wmv"} ;
 	
 	public Watcher(MovieManager manager, String path) {
 		this.manager = manager;
@@ -84,26 +84,15 @@ public class Watcher {
                 Path fileName = ev.context();
                 
                 if (kind == ENTRY_MODIFY) {
-                    System.out.println(">> \""+ fileName + "\" has changed!");
                     this.performAllMovies(absolutePath(key,fileName));
 
                 }
                 else if(kind == ENTRY_CREATE) {
-                	System.out.println(">> \""+ fileName + "\" has been created!");
                 	this.performAllMovies(absolutePath(key,fileName));
                 	
                 }
                 else if(kind == ENTRY_DELETE) {
-                	System.out.println(">> \""+ fileName + "\" has been deleted!");
                 	this.manager.performFileDeleted(absolutePath(key,fileName));
-                	
-                	if(Paths.get(absolutePath(key,fileName)).toFile().isFile()){
-                		System.out.println(">> \""+ fileName + "\" is a File");
-                		//this.manager.performFileDeleted(absolutePath(key,fileName));
-                	}
-                	else {
-                		System.out.println(">> \""+ fileName + "\" is a Directory");
-                	}
                 }
             }
              
@@ -117,12 +106,21 @@ public class Watcher {
 	private void initAll() {
 		// Get all movies in that new directory
 		List<Path> movies = this.getAllMovieFiles(rootPath);
+		
 		if(movies!= null) {
+			this.updateIndex();
+			System.out.println("Movies: " +movies);
+			System.out.println("Index: " +this.index);
 			List<String> filesToRemove = new ArrayList<String>();
-			for(String str : index) {
+			List<Path> moviesToRemove = new ArrayList<Path>();
+			for(String str : this.index) {
+				System.out.println("Entry in index: " +str);
 				boolean found = false; 
 				for(Path p : movies) {
+					System.out.println("Path of movies: " +p.toAbsolutePath().toString());
 					if(str.equals(p.toAbsolutePath().toString())) {
+						System.out.println("FOUND!");
+						moviesToRemove.add(p);
 						found=true;
 					}
 				}
@@ -133,7 +131,9 @@ public class Watcher {
 			for(String str : filesToRemove) {
 				this.removeFromIndex(str);
 			}
-			
+			for(Path str : moviesToRemove) {
+				movies.remove(str);
+			}
 			
 			for(Path str : movies) {
 	   			manager.performFileCreated(str.toString(), str.getFileName().toString());
@@ -143,7 +143,7 @@ public class Watcher {
 	
 	private void performAllMovies(String dir) {
 		// Get all movies in that new directory
-		List<Path> movies = this.getAllMovieFiles(rootPath);
+		List<Path> movies = this.getAllNewMovieFiles(rootPath);
 		if(movies!= null) {
 			for(Path str : movies) {
 	   			manager.performFileCreated(str.toString(), str.getFileName().toString());
@@ -182,6 +182,28 @@ public class Watcher {
 	}
 	
 	private List<Path> getAllMovieFiles(String path) {
+		File dir = new File(path);
+		if(dir.isDirectory()) {
+			Collection<File> files = FileUtils.listFilesAndDirs(dir, TrueFileFilter.INSTANCE, DirectoryFileFilter.DIRECTORY) ;
+			List<Path> results = new ArrayList<Path>() ; 
+			for(File f : files) {
+				if (f.isFile()) {
+					if(isValidFile(f.getName())) {
+						// Add to the list
+						results.add(f.toPath());
+						index.add(f.getPath());
+					}
+				}
+				else if(f.isDirectory() && !f.equals(dir)) {
+					register(f.getAbsolutePath());
+				}
+			}
+			return results;
+		}
+		return null;
+	}
+	
+	private List<Path> getAllNewMovieFiles(String path) {
 		File dir = new File(path);
 		if(dir.isDirectory()) {
 			Collection<File> files = FileUtils.listFilesAndDirs(dir, TrueFileFilter.INSTANCE, DirectoryFileFilter.DIRECTORY) ;
@@ -233,10 +255,10 @@ public class Watcher {
 	}
 	
 	public void addToIndex(MovieFile m) {
-		if(!index.contains(m.getNameWithAbsolutPath())) {
-			logger.logInfo("Add to Index: {0}", m.getNameWithAbsolutPath());
+		if(!index.contains(m.getFileNameWithAbsolutePath())) {
+			logger.logInfo("Add to Index: {0}", m.getFileNameWithAbsolutePath());
 			try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(indexPath, true)))) {
-			    out.println(m.getNameWithAbsolutPath());
+			    out.println(m.getFileNameWithAbsolutePath());
 			    out.close();
 			}catch (IOException e) {
 			    //exception handling left as an exercise for the reader
@@ -244,10 +266,15 @@ public class Watcher {
 		}
 	}
 	
-	public void removeFromIndex(String m) {
+	public void removeFromIndex(MovieFile m) {
+		this.removeFromIndex(m.getFileNameWithAbsolutePath());
+		
+	}
+	
+	public void removeFromIndex(String str) {
 		for(int i=0; i<index.size(); i++){
-			if(index.get(i).startsWith(m)) {
-				logger.logInfo("Remove from Index: {0}", m);
+			if(index.get(i).startsWith(str)) {
+				logger.logInfo("Remove from Index: {0}", str);
 				index.remove(i);
 				updateIndex();
 			}

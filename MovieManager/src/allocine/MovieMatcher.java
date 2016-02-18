@@ -67,7 +67,7 @@ public class MovieMatcher implements Matcher {
 		
 		
 		// Match
-		this.match(query.getTitle(), query.getYear(), results) ;
+		this.match(query.getFileTitle(), query.getFileYear(), results) ;
 		
 		// Init movie code of best entry
 		int code = -1 ;

@@ -45,7 +45,7 @@ public class AllocineManager {
 	
 	public Movie searchMovies(MovieFile query) throws AllocineException, NoMovieFoundException {
 		// Call Allocine API to search movies
-		Search search = api.searchMovies(query.getTitle());
+		Search search = api.searchMovies(query.getFileTitle());
 		
 		// Get found movies
 		List<allocine.model.Movie> movies = search.getMovies();

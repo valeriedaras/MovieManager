@@ -61,15 +61,15 @@ public class FileReader {
 						nameStr += name[i]+SEPARATOR ;
 					}
 					else {
-						mFile.setYear(name[i]) ;
+						mFile.setFileYear(name[i]) ;
 					}				
 				}
 			}
 			nameStr=nameStr.trim();
-			mFile.setTitle(nameStr);
+			mFile.setFileTitle(nameStr);
 			
 			// Set Extension
-			mFile.setExtension("."+name[name.length-1]);
+			mFile.setFileExtension("."+name[name.length-1]);
 			
 			return mFile ;
 		}
