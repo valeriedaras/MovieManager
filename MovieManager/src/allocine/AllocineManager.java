@@ -31,7 +31,9 @@ public class AllocineManager {
 	
 	private final Log logger = new Log("AllocineManager", verbose);
 	
-	
+	/**
+	 * Constructor
+	 */
 	public AllocineManager() {
 		try {
 			matcher = new MovieMatcher() ;
@@ -42,7 +44,13 @@ public class AllocineManager {
 		}
 	}
 	
-	
+	/**
+	 * Method to search movies
+	 * @param query: movieFile containing necessary information
+	 * @return the best occurrence of all found movies
+	 * @throws AllocineException
+	 * @throws NoMovieFoundException
+	 */
 	public Movie searchMovies(MovieFile query) throws AllocineException, NoMovieFoundException {
 		// Call Allocine API to search movies
 		Search search = api.searchMovies(query.getFileTitle());
@@ -77,11 +85,19 @@ public class AllocineManager {
 		throw new NoMovieFoundException() ;
 	}
 	
-	
+	/**
+	 * Method to set verbose mode
+	 * @param v : true for verbose
+	 */
 	public void setVerbose(boolean v) {
 		verbose = v ;
 	}
 	
+	/**
+	 * Method to add all genres to the movie
+	 * @param nmovie: new movie
+	 * @param movie: movie from allocine
+	 */
 	private void setGenres(Movie nmovie, allocine.model.Movie movie) {
 		List<CodeName> genres = movie.getGenre() ;
 		for (CodeName genre : genres) {
@@ -89,6 +105,11 @@ public class AllocineManager {
 		}
 	}
 	
+	/**
+	 * Method to add all casting members to the movie
+	 * @param nmovie: new movie
+	 * @param movie: movie from allocine
+	 */
 	private void setCastingMember(Movie nmovie, allocine.model.Movie movie) {
 		List<CastMember> members = movie.getCastMember() ;
 		for (CastMember member : members) {

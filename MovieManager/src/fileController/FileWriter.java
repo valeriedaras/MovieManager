@@ -5,6 +5,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.nio.file.Files;
 
 import model.MovieFile;
 import utils.Log;
@@ -23,7 +24,7 @@ public class FileWriter {
 
 	protected void deleteFile(String url) throws FileNotFoundException{
 		File file = new File (url);
-		if(file.exists()){
+		if(file.exists() || Files.isSymbolicLink(new File(url).toPath())){
 			file.delete();
 		}
 	}
@@ -39,10 +40,12 @@ public class FileWriter {
 
 	protected void renameFile (String newUrl, String oldUrl) throws FileNotFoundException{
 		Runtime R = Runtime.getRuntime();
-		try {
-			R.exec("mv "+oldUrl+" "+newUrl);
-		} catch (IOException e) {
-			logger.logSevere("Renaming failed: {0}",e);
+		if(!newUrl.equals(oldUrl)) {
+			try {
+				R.exec("mv "+oldUrl+" "+newUrl);
+			} catch (IOException e) {
+				logger.logSevere("Renaming failed: {0}",e);
+			}
 		}
 	}
 

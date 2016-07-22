@@ -63,6 +63,7 @@ public class MovieManager {
 	public void performFileDeleted(String path) {
 		logger.logInfo("Perform File Deleted: {0}",path);
 		watcher.removeFromIndex(path);
+		fileController.performRemoveSymbolicLinks(path);
 	}
 	
 	public FileController getFileController() {

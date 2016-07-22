@@ -1,10 +1,14 @@
 package fileController;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +22,9 @@ public class FileReader {
 	
 	private static final String BLACKLIST_FILE = "src/blacklist.txt" ;
 	
+	/**
+	 * Constructor
+	 */
 	protected FileReader() {
 		this.blacklist = new ArrayList<String>() ;
 		FileInputStream fstream;
@@ -35,6 +42,11 @@ public class FileReader {
 		}
 	}
 	
+	/**
+	 * Method to get all information from a path
+	 * @param path to file
+	 * @return
+	 */
 	protected MovieFile retrieveInfosFile(String file) {
 
 		if (file != null) {
@@ -94,8 +106,43 @@ public class FileReader {
 	    return true;
 	}
 	
+	/**
+	 * Method to get the list of all symbolic links of a file
+	 * All genres folders are explored to find the symbolic links
+	 * @param path to input file
+	 * @return
+	 */
+	public List<String> getSymbolicLinks(String absPath, String[] genres, String file) {
+		List<String> links = new ArrayList<String>() ;
+		for(String l : genres) {
+			Path path = new File(absPath+"/"+l+"/"+file).toPath() ;
+			if(Files.isSymbolicLink(path)) { 
+				links.add(path.toString());
+			}
+		}
+		return links;
+	}
+	
+	/**
+	 * Method to get the list of all sub-directories of a directory
+	 * @param path
+	 * @return
+	 */
+	public String[] getListSubdirectories(String path) {
+		File file = new File(path);
+		String[] subdirs = file.list(new FilenameFilter() {
+		  @Override
+		  public boolean accept(File current, String name) {
+		    return new File(current, name).isDirectory();
+		  }
+		});		
+		return subdirs;
+	}
+	
 	public static void main(String[] args) {
 		FileReader f = new FileReader() ;
+		
+		System.out.println("Test n° 1") ;
 		FileInputStream fstream;
 		try {
 			fstream = new FileInputStream("src/corpus.txt");
@@ -112,5 +159,17 @@ public class FileReader {
 			e.printStackTrace();
 		}
 		
+		System.out.println("\nTest n° 2") ;
+		String path = "/Users/valeriedaras/Desktop/Genres" ;
+		String [] subdirs = f.getListSubdirectories(path);
+		for(String n : subdirs) {
+			System.out.println("Dir: "+ n);
+		}
+		
+		System.out.println("\nTest n° 3") ;
+		List<String> links = (ArrayList<String>)f.getSymbolicLinks(path, subdirs, "Titanic_1953.avi");
+		for(String n : links) {
+			System.out.println("Dir: "+ n);
+		}
 	}
 }
