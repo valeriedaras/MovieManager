@@ -66,8 +66,14 @@ public class Watcher {
 		
 		try {
 			this.watcher = FileSystems.getDefault().newWatchService();
-			register(Paths.get(path));
-		} catch (IOException e) {
+			Runtime R = Runtime.getRuntime();
+			do {
+				R.exec("mkdir "+this.rootPath);
+				//R.exec("sudo mount -a");
+				Thread.sleep(3000);
+			} while(!register(Paths.get(this.rootPath))) ;
+			
+		} catch (IOException | InterruptedException e) {
 			logger.logSevere("Failed to create Watcher.",e);
 		}
 	}
@@ -107,7 +113,22 @@ public class Watcher {
              
             boolean valid = key.reset();
             if (!valid) {
-                break;
+            	if(!new File(this.rootPath).exists()) {
+            		System.out.println("Movie folder removed. Mouting the file system again...");
+                	Runtime R = Runtime.getRuntime();
+        			try {
+        				do {
+        					R.exec("mkdir "+this.rootPath);
+        					//R.exec("sudo mount -a");
+            				Thread.sleep(3000);
+        				} while(!register(Paths.get(this.rootPath))) ;
+    	
+        			} catch (IOException e) {
+        				logger.logSevere("Mounting the file system again failed",e);
+        			} catch (InterruptedException e) {
+    					
+    				}
+            	}
             }
         }
 	}
@@ -182,7 +203,7 @@ public class Watcher {
 	 * Method to register a new directory
 	 * @param dir
 	 */
-	private void register(Path dir) {
+	private boolean register(Path dir) {
 		WatchKey key;
 		try {
 			key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
@@ -190,7 +211,9 @@ public class Watcher {
 			logger.logInfo("Watch Service registered for dir: {0}", dir.getFileName());
 		} catch (IOException e) {
 			logger.logInfo("Failed to register dir: {0} - {1}", new Object[] {dir.getFileName(), e.toString()});
+			return false;
 		}
+		return true;
 	}
 	
 	/**

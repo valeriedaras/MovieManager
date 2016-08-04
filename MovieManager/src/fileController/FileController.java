@@ -1,8 +1,10 @@
 package fileController;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 
+import javafx.scene.Parent;
 import utils.Log;
 import model.MovieFile;
 
@@ -123,7 +125,23 @@ public class FileController {
 	 */
 	public void performUnknownMovie(MovieFile f){
 		try {
-			writer.renameFile(unknownMoviePath+"/"+f.getCompleteFileName(), f.getFileNameWithAbsolutePath());
+			File file = new File(f.getFileNameWithAbsolutePath()) ;
+			File parent = file.getParentFile();
+			String path = "";
+			while(!(parent.getAbsolutePath()+"/").equals(moviePath)) {
+				path = parent.getName();
+				parent = parent.getParentFile() ;
+			} 
+			System.out.println("Found path: "+ path);
+			
+			if(path.isEmpty()) {
+				System.out.println("mv " + f.getFileNameWithAbsolutePath() + " --> " +unknownMoviePath + f.getCompleteFileName());
+				writer.renameFile(unknownMoviePath + f.getCompleteFileName(), f.getFileNameWithAbsolutePath());
+			}
+			else {
+				System.out.println("mv " + moviePath + path + " --> " + unknownMoviePath + path);
+				writer.renameFile(unknownMoviePath + path, moviePath + path);
+			}
 		} catch (FileNotFoundException e) {
 			logger.logSevere("File not found.");
 		}

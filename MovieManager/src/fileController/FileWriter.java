@@ -48,6 +48,17 @@ public class FileWriter {
 			}
 		}
 	}
+	
+	protected void renameFolder (String newUrl, String oldUrl) throws FileNotFoundException{
+		Runtime R = Runtime.getRuntime();
+		if(!newUrl.equals(oldUrl)) {
+			try {
+				R.exec("mv "+oldUrl+" "+newUrl);
+			} catch (IOException e) {
+				logger.logSevere("Renaming failed: {0}",e);
+			}
+		}
+	}
 
 	protected void fileWriter (String content, String path){
 		File f = new File(path);	
