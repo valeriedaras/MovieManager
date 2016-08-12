@@ -84,7 +84,6 @@ public class MovieFile {
 	}
 	
 	public List<String> getSymbolicLinks() {
-		System.out.println("Links:" + this.symbolicLinks);
 		return this.symbolicLinks;
 	}
 	

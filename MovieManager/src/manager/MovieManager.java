@@ -1,11 +1,12 @@
 package manager;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import directory.Watcher;
 import fileController.FileController;
 import model.InvalidMovieFileException;
 import model.Movie;
 import model.MovieFile;
-import utils.Log;
 import allocine.AllocineException;
 import allocine.AllocineManager;
 import allocine.NoMovieFoundException;
@@ -21,12 +22,12 @@ public class MovieManager {
 	/**
 	 * Logger
 	 */
-	private static final Log logger = new Log("MovieManager", true);
+	private static Logger logger = LogManager.getLogger("MovieManager");
 	
-	public MovieManager() {
+	public MovieManager(String rootpath) {
 		this.allocineManager = new AllocineManager() ;
-		this.fileController = new FileController() ;
-		this.watcher = new Watcher(this, "/Users/valeriedaras/Desktop/Movies/");
+		this.fileController = new FileController(rootpath+"/Movies/", rootpath+"/Unknown_Movies/", rootpath+"/Movie_Info/", rootpath+"/Genres/") ;
+		this.watcher = new Watcher(this, rootpath+"/Movies/");
 		this.watcher.start();
 	}
 	
@@ -34,15 +35,14 @@ public class MovieManager {
 		try {
 			return allocineManager.searchMovies(file);
 		} catch (AllocineException | NoMovieFoundException e) {
-			logger.logInfo("No Movie Found Exception: Movie \"{0}\" not found. Has to be moved into another folder.", file);
+			logger.warn("No movie found: Movie \"{}\" will be moved into another folder.", file);
 			fileController.performUnknownMovie(file);
 		}
 		return null;
 	}
 	
 	public void performFileCreated(String path, String name) {
-		System.out.println("*************************");
-		logger.logInfo("Perform File Created: {0}",name);
+		logger.info("{}",name);
 		MovieFile mFile = this.fileController.performRetrieveInfoFile(name);
 		mFile.setAbsolutePath(path);
 		mFile.setFileName(name);
@@ -55,13 +55,13 @@ public class MovieManager {
 			fileController.performSymbolicLinks(mFile);
 			watcher.addToIndex(mFile);
 		} catch (InvalidMovieFileException e) {
-			logger.logSevere("Invalid Movie File Exception: Movie \"{0}\" has to been moved into another folder.", mFile);
+			logger.warn("Invalid movie file: Movie \"{}\" will be moved into another folder.", mFile);
 			fileController.performUnknownMovie(mFile); 
 		}
 	}
 	
 	public void performFileDeleted(String path) {
-		logger.logInfo("Perform File Deleted: {0}",path);
+		logger.info("{}",path);
 		watcher.removeFromIndex(path);
 		fileController.performRemoveSymbolicLinks(path);
 	}
@@ -71,7 +71,7 @@ public class MovieManager {
 	}
 	
 	public static void main(String[] args) {
-		new MovieManager() ;
+		new MovieManager(args[0]) ;
 	}
 
 }

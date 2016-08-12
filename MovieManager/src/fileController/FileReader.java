@@ -12,6 +12,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import model.MovieFile;
 
 public class FileReader {
@@ -20,7 +23,9 @@ public class FileReader {
 	
 	private static final String SEPARATOR = " " ;
 	
-	private static final String BLACKLIST_FILE = "src/blacklist.txt" ;
+	private static final String BLACKLIST_FILE = ".blacklist.txt" ;
+	
+	private static Logger logger = LogManager.getLogger("FileReader");
 	
 	/**
 	 * Constructor
@@ -35,10 +40,12 @@ public class FileReader {
 			        this.blacklist.add(line);
 			    }
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.error("Blacklist could not be read. The system will be stopped.");
+				System.exit(-1);
 			}
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			logger.fatal("Blacklist not found. The system will be stopped.");
+			System.exit(-1);
 		}
 	}
 	

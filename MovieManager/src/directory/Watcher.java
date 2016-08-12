@@ -20,14 +20,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.TrueFileFilter;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import manager.MovieManager;
 import model.MovieFile;
-import utils.Log;
 import static java.nio.file.StandardWatchEventKinds.*;
 
 public class Watcher {
@@ -42,11 +41,9 @@ public class Watcher {
     
     private final String rootPath ;
     
-    private final String indexPath = "src/index.txt" ;
-    
-	private static final boolean verbose = true;
+    private final String indexPath = ".index.txt" ;
 	
-	private static final Log logger = new Log("Watcher", verbose);
+	private static Logger logger = LogManager.getLogger("Watcher");
 	
 	private static final String[] validExtensions = {".avi", ".mkv", ".mp4", ".mov", ".mpg", ".mpa", ".wma", ".wmv"} ;
 	
@@ -62,19 +59,25 @@ public class Watcher {
 		this.keys = new HashMap<WatchKey, Path>();
 		this.index = new ArrayList<String>();
 		loadIndex();
-		logger.logInfo("Index: {0}", index);
+		logger.info("Start index: {}", index);
 		
 		try {
 			this.watcher = FileSystems.getDefault().newWatchService();
 			Runtime R = Runtime.getRuntime();
 			do {
-				R.exec("mkdir "+this.rootPath);
-				//R.exec("sudo mount -a");
+				logger.info("System is running on {}.", System.getProperty("os.name", "generic"));
+				if (System.getProperty("os.name", "generic").equals("Mac OS X") || System.getProperty("os.name", "generic").equals("Windows")) {
+					R.exec("mkdir "+this.rootPath);
+				}
+				else {
+					R.exec("sudo mount -a");
+				}
 				Thread.sleep(3000);
 			} while(!register(Paths.get(this.rootPath))) ;
 			
 		} catch (IOException | InterruptedException e) {
-			logger.logSevere("Failed to create Watcher.",e);
+			logger.fatal("Failed to create watcher. The system will be stopped.",e);
+			System.exit(-1);
 		}
 	}
 	
@@ -100,11 +103,9 @@ public class Watcher {
                 
                 if (kind == ENTRY_MODIFY) {
                     this.performAllNewMovies(absolutePath(key,fileName));
-
                 }
                 else if(kind == ENTRY_CREATE) {
                 	this.performAllNewMovies(absolutePath(key,fileName));
-                	
                 }
                 else if(kind == ENTRY_DELETE) {
                 	this.manager.performFileDeleted(absolutePath(key,fileName));
@@ -118,16 +119,18 @@ public class Watcher {
                 	Runtime R = Runtime.getRuntime();
         			try {
         				do {
-        					R.exec("mkdir "+this.rootPath);
-        					//R.exec("sudo mount -a");
+        					if (System.getProperty("os.name", "generic").equals("Mac OS X") || System.getProperty("os.name", "generic").equals("Windows")) {
+        						R.exec("mkdir "+this.rootPath);
+        					}
+        					else {
+        						R.exec("sudo mount -a");
+        					}
             				Thread.sleep(3000);
         				} while(!register(Paths.get(this.rootPath))) ;
     	
-        			} catch (IOException e) {
-        				logger.logSevere("Mounting the file system again failed",e);
-        			} catch (InterruptedException e) {
-    					
-    				}
+        			} catch (IOException | InterruptedException e) {
+        				logger.error("Mounting the file system again failed. We will try it later again.",e);
+        			}
             	}
             }
         }
@@ -137,21 +140,21 @@ public class Watcher {
 	 * Method to initialize the list of known movies
 	 */
 	private void initAll() {
-		System.out.println("[InitAll] Start");
+		logger.debug("Entry.");
 		// Get all movies in that new directory
 		List<Path> movies = this.getAllMovieFiles(rootPath);
 	
-		System.out.println("Movies: " +movies);
-		System.out.println("Index: " +this.index);
+		logger.debug("Movies: " +movies);
+		logger.debug("Index: " +this.index);
 		List<String> filesToRemove = new ArrayList<String>();
 		List<Path> moviesToRemove = new ArrayList<Path>();
 		for(String str : this.index) {
-			System.out.println("Entry in index: " +str);
+			logger.debug("Entry in index: {}", str);
 			boolean found = false; 
 			for(Path p : movies) {
-				System.out.println("Path of movies: " +p.toAbsolutePath().toString());
+				logger.debug("Path of movie: {}", p.toAbsolutePath().toString());
 				if(str.equals(p.toAbsolutePath().toString())) {
-					System.out.println("FOUND!");
+					logger.debug("File found: {}", str);
 					moviesToRemove.add(p);
 					found=true;
 				}
@@ -172,6 +175,8 @@ public class Watcher {
    			manager.performFileCreated(str.toString(), str.getFileName().toString());
    		}
 		this.updateIndex();
+		
+		logger.debug("End.");
 	}
 	
 	/**
@@ -208,9 +213,9 @@ public class Watcher {
 		try {
 			key = dir.register(watcher, ENTRY_CREATE, ENTRY_DELETE, ENTRY_MODIFY);
 			this.keys.put(key, dir);
-			logger.logInfo("Watch Service registered for dir: {0}", dir.getFileName());
+			logger.info("Watch service registered for directory: {}", dir.getFileName());
 		} catch (IOException e) {
-			logger.logInfo("Failed to register dir: {0} - {1}", new Object[] {dir.getFileName(), e.toString()});
+			logger.fatal("Failed to register dir: {} - {1}.", new Object[] {dir.getFileName(), e.toString()});
 			return false;
 		}
 		return true;
@@ -318,17 +323,20 @@ public class Watcher {
 				    	this.index.add(line);
 				    }
 				} catch (IOException e) {
-					logger.logSevere("Failed to read in Index: {0}", e.toString());
+					logger.fatal("Failed to read in index - {}. The system will be stopped.", e.toString());
+					System.exit(-1);
 				}
 			} catch (FileNotFoundException e) {
-				logger.logSevere("File not found. Should never happen.");
+				logger.fatal("File not found. Should never happen. The system will be stopped.", e.toString());
+				System.exit(-1);
 			}
 		}
 		else {
 			try {
 				index.createNewFile();
 			} catch (IOException e) {
-				logger.logSevere("Failed to create Index: {0}", e.toString());
+				logger.fatal("Failed to create index - {}. The system will be stopped.", e.toString());
+				System.exit(-1);
 			}
 		}
 	}
@@ -340,12 +348,13 @@ public class Watcher {
 	public void addToIndex(MovieFile m) {
 		if(!index.contains(m.getFileNameWithAbsolutePath())) {
 			index.add(m.getFileNameWithAbsolutePath());
-			logger.logInfo("Add to Index: {0}", m.getFileNameWithAbsolutePath());
+			logger.info("New entry in index: {}", m.getFileNameWithAbsolutePath());
 			try(PrintWriter out = new PrintWriter(new BufferedWriter(new FileWriter(indexPath, true)))) {
 			    out.println(m.getFileNameWithAbsolutePath());
 			    out.close();
 			}catch (IOException e) {
-			    //exception handling left as an exercise for the reader
+				logger.fatal("Failed to add new entry into the index - {}. The system will be stopped.", e.toString());
+				System.exit(-1);
 			}
 			updateIndex();
 		}
@@ -367,7 +376,7 @@ public class Watcher {
 	public void removeFromIndex(String str) {
 		for(int i=0; i<index.size(); i++){
 			if(index.get(i).startsWith(str)) {
-				logger.logInfo("Remove from Index: {0}", str);
+				logger.info("{}", str);
 				index.remove(i);
 				updateIndex();
 			}
@@ -389,10 +398,12 @@ public class Watcher {
 					}
 					out.close();
 				}catch (IOException e) {
-				    //exception handling left as an exercise for the reader
+				    logger.fatal("Failed to update the index - {}. The system will be stopped.", e.toString());
+					System.exit(-1);
 				}
 			} catch (IOException e) {
-				
+				logger.fatal("Failed to create the index - {}. The system will be stopped.", e.toString());
+				System.exit(-1);
 			}
 		}
 	}

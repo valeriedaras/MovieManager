@@ -3,9 +3,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
-
-import javafx.scene.Parent;
-import utils.Log;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import model.MovieFile;
 
 
@@ -14,22 +13,22 @@ public class FileController {
 	/**
 	 * Path to all movies
 	 */
-	public static final String moviePath="/Users/valeriedaras/Desktop/Movies/";
+	private final String moviePath;
 	
 	/**
 	 * Path to unknown movies
 	 */
-	public static final String unknownMoviePath="/Users/valeriedaras/Desktop/Unknown_Movies/";
+	public final String unknownMoviePath;
 	
 	/**
 	 * Path to the information files of all movies
 	 */
-	public static final String movieInfoPath="/Users/valeriedaras/Desktop/Movie_Info/";
+	public final String movieInfoPath;
 	
 	/**
 	 * Path to the movie genres
 	 */
-	public static final String movieGenrePath="/Users/valeriedaras/Desktop/Genres/";
+	public final String movieGenrePath;
 	
 	/**
 	 * Field of the file reader
@@ -44,24 +43,29 @@ public class FileController {
 	/**
 	 * Field of the logger
 	 */
-	private static final Log logger = new Log("FileController", true); 
+	private static Logger logger = LogManager.getLogger("FileController");
 	
 	/**
 	 * Constructor
 	 */
-	public FileController(){
+	public FileController(String moviePath, String unknownMoviePath, String movieGenrePath, String movieInfoPath){
+		this.moviePath = moviePath;
+		this.unknownMoviePath = unknownMoviePath;
+		this.movieGenrePath = movieGenrePath;
+		this.movieInfoPath = movieInfoPath;
 		reader = new FileReader();
 		writer = new FileWriter();
 		init();
+		logger.info("Initialized.");
 	}
 	
 	/**
 	 * Method to initialize paths
 	 */
 	protected void init (){
-		writer.createFile(moviePath);
-		writer.createFile(unknownMoviePath);
-		writer.createFile(movieInfoPath);
+		writer.createDir(moviePath);
+		writer.createDir(unknownMoviePath);
+		writer.createDir(movieInfoPath);
 	}
 	
 	/** 
@@ -79,11 +83,11 @@ public class FileController {
 	 */
 	public void performFileWrite (MovieFile f){
 		try {
-			logger.logInfo("Write to file: {0}", movieInfoPath+f.getCompleteMovieName()+".txt");
 			writer.fileWriter(f.toJSON(),movieInfoPath+f.getCompleteMovieName()+".txt");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		logger.info("Written into: {}", movieInfoPath+f.getCompleteMovieName()+".txt");
 	}
 	
 	/**
@@ -93,11 +97,11 @@ public class FileController {
 	public void performUpdateMovie(MovieFile f){
 		//Renommage des films avec le nom title+SEPARATOR+year+extension(MovieFile)
 		try {
-			logger.logInfo("Move : mv {0} >> {1}", new Object[]{f.getFileName(), f.getCompleteMovieNameWithAbsolutePath()});
 			writer.renameFile(f.getCompleteMovieNameWithAbsolutePath(), f.getFileName());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}	
+		logger.info("File moved from {} >> {}", new Object[]{f.getFileName(), f.getCompleteMovieNameWithAbsolutePath()});
 	}
 	
 	/**
@@ -108,14 +112,14 @@ public class FileController {
 		//Creation des dossiers GENRE et cree les liens qui vont avec
 		Runtime R = Runtime.getRuntime();
 		for (String str: f.getSymbolicLinks()){
-			System.out.println("Create Genre Dir: " +str);
-			writer.createFile(movieGenrePath+str);	
+			//System.out.println("Create Genre Dir: " +str);
+			writer.createDir(movieGenrePath+str);	
 			try {
-				logger.logInfo("Link : ln -s {0} >> {1}", new Object[]{f.getFileNameWithAbsolutePath(), movieGenrePath+f.getCompleteFileName()});
 				R.exec("ln -s "+f.getFileNameWithAbsolutePath()+" "+movieGenrePath+str+"/"+f.getCompleteMovieNameWithExt());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			logger.info("Link created from {} >> {}", new Object[]{f.getFileNameWithAbsolutePath(), movieGenrePath+f.getCompleteFileName()});
 		}
 	}
 	
@@ -132,18 +136,18 @@ public class FileController {
 				path = parent.getName();
 				parent = parent.getParentFile() ;
 			} 
-			System.out.println("Found path: "+ path);
+			logger.debug("Found path of file: "+ path);
 			
 			if(path.isEmpty()) {
-				System.out.println("mv " + f.getFileNameWithAbsolutePath() + " --> " +unknownMoviePath + f.getCompleteFileName());
 				writer.renameFile(unknownMoviePath + f.getCompleteFileName(), f.getFileNameWithAbsolutePath());
+				logger.info("File move from " + f.getFileNameWithAbsolutePath() + " >> " +unknownMoviePath + f.getCompleteFileName());
 			}
 			else {
-				System.out.println("mv " + moviePath + path + " --> " + unknownMoviePath + path);
 				writer.renameFile(unknownMoviePath + path, moviePath + path);
+				logger.info("File move from " + moviePath + path + " >> " + unknownMoviePath + path);
 			}
 		} catch (FileNotFoundException e) {
-			logger.logSevere("File not found.");
+			logger.fatal("File not found.");
 		}
 	}
 	
@@ -163,7 +167,7 @@ public class FileController {
 			try {
 				writer.deleteFile(str);
 			} catch (FileNotFoundException e) {
-				logger.logSevere("File not found.");
+				logger.fatal("File not found.");
 			}
 		}
 			

@@ -6,16 +6,15 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.file.Files;
-
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import model.MovieFile;
-import utils.Log;
 
 public class FileWriter {
 
-	private final Log logger = new Log("FileController", verbose);
-	private static boolean verbose = true ;
+	private static Logger logger = LogManager.getLogger("FileController");
 
-	protected void createFile(String url){
+	protected void createDir(String url){
 		File f = new File(url);
 		if(!f.exists()){
 			f.mkdirs();
@@ -44,7 +43,8 @@ public class FileWriter {
 			try {
 				R.exec("mv "+oldUrl+" "+newUrl);
 			} catch (IOException e) {
-				logger.logSevere("Renaming failed: {0}",e);
+				logger.fatal("Renaming/moving file failed: {}. The system will be stopped.",e);
+				System.exit(-1);
 			}
 		}
 	}
@@ -55,7 +55,8 @@ public class FileWriter {
 			try {
 				R.exec("mv "+oldUrl+" "+newUrl);
 			} catch (IOException e) {
-				logger.logSevere("Renaming failed: {0}",e);
+				logger.fatal("Renaming/moving folder failed: {}. The system will be stopped.",e);
+				System.exit(-1);
 			}
 		}
 	}
@@ -67,7 +68,8 @@ public class FileWriter {
 			writer = new OutputStreamWriter (new FileOutputStream(f));
 			writer.append(content);
 		} catch (IOException e) {
-			e.printStackTrace();
+			logger.fatal("Writting into a file failed: {}. The system will be stopped.",e);
+			System.exit(-1);
 		}
 		finally{
 			try {
@@ -75,24 +77,10 @@ public class FileWriter {
 					writer.close();
 				}
 			} catch (IOException e) {
-				e.printStackTrace();
+				logger.fatal("Closing a file failed: {}. The system will be stopped.",e);
+				System.exit(-1);
 			}
 		}
 	}
-
-	public static void main(String[] args){
-		FileWriter writer = new FileWriter();
-		try {
-			String oldFile = "/Users/valeriedaras/Desktop/TOTO.avi" ;
-			String newFile = "/Users/valeriedaras/Desktop/TOTO2.avi" ;
-			writer.createFile(oldFile);
-			writer.renameFile(newFile, oldFile);
-			writer.deleteFile(oldFile);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		}
-		
-	}
-
 
 }
