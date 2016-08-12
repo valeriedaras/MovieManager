@@ -18,6 +18,7 @@ public class FileWriter {
 		File f = new File(url);
 		if(!f.exists()){
 			f.mkdirs();
+			logger.info("Created new directory: {}", url);
 		}
 	}
 

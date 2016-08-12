@@ -26,8 +26,8 @@ public class MovieManager {
 	
 	public MovieManager(String rootpath) {
 		this.allocineManager = new AllocineManager() ;
-		this.fileController = new FileController(rootpath+"/Movies/", rootpath+"/Unknown_Movies/", rootpath+"/Movie_Info/", rootpath+"/Genres/") ;
-		this.watcher = new Watcher(this, rootpath+"/Movies/");
+		this.fileController = new FileController(rootpath+"/Tous/", rootpath+"/Inconnus/", rootpath+"/.Informations/", rootpath+"/Genres/") ;
+		this.watcher = new Watcher(this, rootpath+"/Tous/");
 		this.watcher.start();
 	}
 	
@@ -47,16 +47,18 @@ public class MovieManager {
 		mFile.setAbsolutePath(path);
 		mFile.setFileName(name);
 		Movie movie = searchMovie(mFile);
-		try {
-			mFile.updateMovie(movie);
-			fileController.performFileWrite(mFile);
-			fileController.performUpdateMovie(mFile);
-			mFile.updateFile();
-			fileController.performSymbolicLinks(mFile);
-			watcher.addToIndex(mFile);
-		} catch (InvalidMovieFileException e) {
-			logger.warn("Invalid movie file: Movie \"{}\" will be moved into another folder.", mFile);
-			fileController.performUnknownMovie(mFile); 
+		if(movie != null) {
+			try {
+				mFile.updateMovie(movie);
+				fileController.performFileWrite(mFile);
+				fileController.performUpdateMovie(mFile);
+				mFile.updateFile();
+				fileController.performSymbolicLinks(mFile);
+				watcher.addToIndex(mFile);
+			} catch (InvalidMovieFileException e) {
+				logger.warn("Invalid movie file: Movie \"{}\" will be moved into another folder.", mFile);
+				fileController.performUnknownMovie(mFile); 
+			}
 		}
 	}
 	

@@ -56,7 +56,6 @@ public class FileController {
 		reader = new FileReader();
 		writer = new FileWriter();
 		init();
-		logger.info("Initialized.");
 	}
 	
 	/**
@@ -87,7 +86,7 @@ public class FileController {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		logger.info("Written into: {}", movieInfoPath+f.getCompleteMovieName()+".txt");
+		logger.debug("Written into: {}", movieInfoPath+f.getCompleteMovieName()+".txt");
 	}
 	
 	/**
@@ -100,7 +99,7 @@ public class FileController {
 			writer.renameFile(f.getCompleteMovieNameWithAbsolutePath(), f.getFileName());
 		} catch (IOException e) {
 			e.printStackTrace();
-		}	
+		}
 		logger.info("File moved from {} >> {}", new Object[]{f.getFileName(), f.getCompleteMovieNameWithAbsolutePath()});
 	}
 	
@@ -112,14 +111,13 @@ public class FileController {
 		//Creation des dossiers GENRE et cree les liens qui vont avec
 		Runtime R = Runtime.getRuntime();
 		for (String str: f.getSymbolicLinks()){
-			//System.out.println("Create Genre Dir: " +str);
-			writer.createDir(movieGenrePath+str);	
+			writer.createDir(movieGenrePath+str);
 			try {
 				R.exec("ln -s "+f.getFileNameWithAbsolutePath()+" "+movieGenrePath+str+"/"+f.getCompleteMovieNameWithExt());
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			logger.info("Link created from {} >> {}", new Object[]{f.getFileNameWithAbsolutePath(), movieGenrePath+f.getCompleteFileName()});
+			logger.debug("Link created from {} >> {}", new Object[]{f.getFileNameWithAbsolutePath(), movieGenrePath+f.getCompleteFileName()});
 		}
 	}
 	
