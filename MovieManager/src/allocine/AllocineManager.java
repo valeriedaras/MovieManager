@@ -4,11 +4,10 @@ import java.util.List;
 
 import model.Movie;
 import model.MovieFile;
-
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-
-import utils.Log;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import allocine.model.CastMember;
 import allocine.model.CodeName;
 import allocine.model.MovieInfos;
@@ -23,13 +22,11 @@ public class AllocineManager {
 	
 	private AllocineApi api ;
 	
-	private static boolean verbose = false ;
-	
 	private static final String PARTNER_KEY = "100043982026";
     
 	private static final String SECRET_KEY = "29d185d98c984a359e6e6f26a0474269";
 	
-	private final Log logger = new Log("AllocineManager", verbose);
+	private static Logger logger = LogManager.getLogger("AllocineManager");
 	
 	/**
 	 * Constructor
@@ -40,7 +37,8 @@ public class AllocineManager {
 			wrapper = HttpClientBuilder.create().build();
 			api = new AllocineApi(PARTNER_KEY, SECRET_KEY, wrapper);
 		} catch (AllocineException e) {
-			logger.logSevere("Creation of AllocineManager failed: {0}",e);
+			logger.fatal("Creation of AllocineManager failed: {0}. The system will be stopped.",e);
+			System.exit(-1);
 		}
 	}
 	
@@ -61,8 +59,8 @@ public class AllocineManager {
 		// Check if movie list is empty 
 		if (!movies.isEmpty()) {
 			for (allocine.model.Movie movie : movies) {
-				logger.logInfo(movie.getOriginalTitle());
-				logger.logInfo(movie.getTitle());
+				logger.debug(movie.getOriginalTitle());
+				logger.debug(movie.getTitle());
 			}
 			
 			// Search for the best occurrence
@@ -83,14 +81,6 @@ public class AllocineManager {
 			}
 		}
 		throw new NoMovieFoundException() ;
-	}
-	
-	/**
-	 * Method to set verbose mode
-	 * @param v : true for verbose
-	 */
-	public void setVerbose(boolean v) {
-		verbose = v ;
 	}
 	
 	/**
