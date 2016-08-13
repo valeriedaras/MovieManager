@@ -2,10 +2,10 @@
 <Configuration status="WARN">
   <Appenders>
     <Console name="Console" target="SYSTEM_OUT">
-      <PatternLayout pattern="%d{DATE} %-5level [%logger{36} - %M] %msg%n"/>
+      <PatternLayout pattern="%highlight{%d{DATE} %-5level [%logger{36} - %M] %msg%n}"/>
     </Console>
     <File name="File" fileName="output.log" bufferedIO="true" advertiseURI="./output.log" advertise="true">
-    	<PatternLayout pattern="%d{DATE} %-5level [%logger{36} - %M] %msg%n"/>
+    	<PatternLayout pattern="%highlight{%d{DATE} %-5level [%logger{36} - %M] %msg%n}"/>
     </File>
   </Appenders>
   <Loggers>

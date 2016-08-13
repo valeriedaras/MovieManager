@@ -3,8 +3,10 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
 import model.MovieFile;
 
 
@@ -94,13 +96,39 @@ public class FileController {
 	 * @param f
 	 */
 	public void performUpdateMovie(MovieFile f){
-		//Renommage des films avec le nom title+SEPARATOR+year+extension(MovieFile)
+		File file = new File(f.getFileNameWithAbsolutePath()) ;
+		
+		// Renaming movie file
 		try {
-			writer.renameFile(f.getCompleteMovieNameWithAbsolutePath(), f.getFileName());
+			writer.renameFile(moviePath + f.getCompleteMovieNameWithExt(), f.getFileName());
+			logger.info("File renamed from {} >> {}", new Object[]{f.getFileName(), moviePath + f.getCompleteMovieNameWithExt()});
+			f.setAbsolutePath(moviePath + f.getCompleteMovieNameWithExt());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		logger.info("File moved from {} >> {}", new Object[]{f.getFileName(), f.getCompleteMovieNameWithAbsolutePath()});
+		
+		try {
+			Thread.sleep(500);
+		} catch (InterruptedException e) {
+			logger.fatal("Thread interruption while sleeping.");
+		}
+		
+		// Removing useless folders
+		File parent = file.getParentFile();
+		while(!(parent.getAbsolutePath()+"/").equals(moviePath)) {
+
+			if(!reader.hasDirMovieFiles(parent.getAbsolutePath())) {
+				try {
+					Runtime R = Runtime.getRuntime();
+					R.exec("rm -R "+ parent.getAbsolutePath());
+				} catch (IOException e) {
+					logger.fatal("Folder could not be removed - {}", e);
+				}
+				logger.info("Folder {} has been removed.", parent.getAbsolutePath());
+			}
+			
+			parent = parent.getParentFile() ;
+		}
 	}
 	
 	/**
@@ -127,7 +155,7 @@ public class FileController {
 	 */
 	public void performUnknownMovie(MovieFile f){
 		try {
-			File file = new File(f.getFileNameWithAbsolutePath()) ;
+			File file = new File(f.getFileName()) ;
 			File parent = file.getParentFile();
 			String path = "";
 			while(!(parent.getAbsolutePath()+"/").equals(moviePath)) {
@@ -137,8 +165,8 @@ public class FileController {
 			logger.debug("Found path of file: "+ path);
 			
 			if(path.isEmpty()) {
-				writer.renameFile(unknownMoviePath + f.getCompleteFileName(), f.getFileNameWithAbsolutePath());
-				logger.info("File move from " + f.getFileNameWithAbsolutePath() + " >> " +unknownMoviePath + f.getCompleteFileName());
+				writer.renameFile(unknownMoviePath, f.getFileName());
+				logger.info("File move from " + f.getFileName() + " >> " +unknownMoviePath);
 			}
 			else {
 				writer.renameFile(unknownMoviePath + path, moviePath + path);
@@ -168,7 +196,5 @@ public class FileController {
 				logger.fatal("File not found.");
 			}
 		}
-			
-		
 	}
 }

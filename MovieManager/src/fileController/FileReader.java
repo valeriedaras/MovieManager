@@ -27,6 +27,8 @@ public class FileReader {
 	
 	private static Logger logger = LogManager.getLogger("FileReader");
 	
+	private static final String[] validExtensions = {".avi", ".mkv", ".mp4", ".mov", ".mpg", ".mpa", ".wma", ".wmv"} ;
+	
 	/**
 	 * Constructor
 	 */
@@ -146,6 +148,46 @@ public class FileReader {
 		return subdirs;
 	}
 	
+	/**
+	 * Method to get the list of all files of a directory
+	 * @param path
+	 * @return
+	 */
+	public boolean hasDirMovieFiles(String path) {
+		File dir = new File(path);
+		
+		// Get all files of current directory
+		File [] files = dir.listFiles() ;
+		if (files != null) {
+			for (File f : files) {
+				for(String str : validExtensions) {
+					if(f.isFile() && f.getAbsolutePath().endsWith(str)) {
+						return true;
+					}
+				}
+			}
+		}
+
+		// Get all files of sub-directories
+		String[] subdirs = getListSubdirectories(path);
+		if(subdirs != null) {
+			for (String subdir : subdirs) {
+				File [] subFiles = new File(path+"/"+subdir).listFiles() ;
+				if (subFiles != null) {
+					for (File f : subFiles) {
+						for(String str : validExtensions) {
+							if(f.isFile() && f.getAbsolutePath().endsWith(str)) {
+								return true;
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		return false;
+	}
+	
 	public static void main(String[] args) {
 		FileReader f = new FileReader() ;
 		
@@ -178,5 +220,14 @@ public class FileReader {
 		for(String n : links) {
 			System.out.println("Dir: "+ n);
 		}
+		
+		System.out.println("\nTest n° 3") ;
+		if(f.hasDirMovieFiles("/Users/valeriedaras/Desktop/Tous/Test")) {
+			System.out.println("Movies are in there!");
+		}
+		else {
+			System.out.println("No movies anymore");
+		}
+			
 	}
 }

@@ -26,7 +26,7 @@ public class MovieManager {
 	
 	public MovieManager(String rootpath) {
 		this.allocineManager = new AllocineManager() ;
-		this.fileController = new FileController(rootpath+"/Tous/", rootpath+"/Inconnus/", rootpath+"/.Informations/", rootpath+"/Genres/") ;
+		this.fileController = new FileController(rootpath+"/Tous/", rootpath+"/Inconnus/", rootpath+"/Genres/", rootpath+"/.Informations/") ;
 		this.watcher = new Watcher(this, rootpath+"/Tous/");
 		this.watcher.start();
 	}
@@ -35,7 +35,7 @@ public class MovieManager {
 		try {
 			return allocineManager.searchMovies(file);
 		} catch (AllocineException | NoMovieFoundException e) {
-			logger.warn("No movie found: Movie \"{}\" will be moved into another folder.", file);
+			logger.warn("No movie found: Movie \"{}\" will be moved into another folder.", file.getFileName());
 			fileController.performUnknownMovie(file);
 		}
 		return null;
@@ -57,7 +57,7 @@ public class MovieManager {
 				watcher.addToIndex(mFile);
 			} catch (InvalidMovieFileException e) {
 				logger.warn("Invalid movie file: Movie \"{}\" will be moved into another folder.", mFile);
-				fileController.performUnknownMovie(mFile); 
+				fileController.performUnknownMovie(mFile);
 			}
 		}
 	}

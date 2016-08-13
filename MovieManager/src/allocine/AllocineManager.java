@@ -1,7 +1,6 @@
 package allocine;
 
 import java.util.List;
-
 import model.Movie;
 import model.MovieFile;
 import org.apache.http.client.HttpClient;

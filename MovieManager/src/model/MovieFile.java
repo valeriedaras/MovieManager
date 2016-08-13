@@ -2,6 +2,7 @@ package model;
 
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +22,8 @@ public class MovieFile {
 	
 	private List<String> symbolicLinks ;
 	
+	private String folder ;
+	
 	private static final String SEPARATOR = "_" ;
 	
 	public MovieFile() {
@@ -37,6 +40,14 @@ public class MovieFile {
 				this.year = year ;
 			}
 		}
+	}
+	
+	public String getfolder() {
+		return this.folder;
+	}
+	
+	public void setFolder() {
+		
 	}
 	
 	public String getFileTitle() {
@@ -173,7 +184,9 @@ public class MovieFile {
 	}
 	
 	private String cleanString(String s) {
-		String str = s.replaceAll("[\\p{Punct}]+", "");
+		String str = s.replaceAll("[\\p{Punct}&&[^&:_]]+", "");
+		str = Normalizer.normalize(str, Normalizer.Form.NFD);
+	    str = str.replaceAll("[\\p{InCombiningDiacriticalMarks}]", "");
 		return str;
 	}
 	

@@ -12,7 +12,7 @@ import model.MovieFile;
 
 public class FileWriter {
 
-	private static Logger logger = LogManager.getLogger("FileController");
+	private static Logger logger = LogManager.getLogger("FileWriter");
 
 	protected void createDir(String url){
 		File f = new File(url);
